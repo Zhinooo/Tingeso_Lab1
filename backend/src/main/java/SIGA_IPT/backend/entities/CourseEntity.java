@@ -55,4 +55,5 @@ public class CourseEntity {
             inverseJoinColumns = @JoinColumn(name = "prerequisite_course_id")
     )
     private List<CourseEntity> prerequisites = new ArrayList<>();
+
 }

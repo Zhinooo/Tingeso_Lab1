@@ -43,4 +43,5 @@ public class EnrollmentEntity {
 
     @Column(name = "final_grade")
     private Double final_grade;
+
 }
