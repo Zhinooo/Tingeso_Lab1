@@ -20,7 +20,7 @@ public class EnrollmentEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)
-    private Long enrollment_id;
+    private Long enrollmentId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_id", nullable = false)
@@ -36,12 +36,12 @@ public class EnrollmentEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "academic_period_id", nullable = false)
-    private AcademicPeriodEntity academic_period;
+    private AcademicPeriodEntity academicPeriod;
 
     @Column(name = "enrollment_date", nullable = false)
-    private LocalDate enrollment_date;
+    private LocalDate enrollmentDate;
 
     @Column(name = "final_grade")
-    private Double final_grade;
+    private Double finalGrade;
 
 }

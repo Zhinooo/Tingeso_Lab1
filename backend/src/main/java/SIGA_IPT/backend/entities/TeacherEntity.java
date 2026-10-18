@@ -20,25 +20,25 @@ public class TeacherEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)
-    private Long teacher_id;
+    private Long teacherId;
 
     @Column(name = "teacher_run", nullable = false, unique = true)
-    private String teacher_run;
+    private String teacherRun;
 
     @Column(name = "teacher_fullname", nullable = false)
-    private String teacher_fullname;
+    private String teacherFullname;
 
     @Column(name = "teacher_email", nullable = false, unique = true)
-    private String teacher_email;
+    private String teacherEmail;
 
     @Column(name = "teacher_protitle", nullable = false)
-    private String teacher_protitle;
+    private String teacherProtitle;
 
     @Column(name = "teacher_degree", nullable = false)
-    private String teacher_degree;
+    private String teacherDegree;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "teacher_status", nullable = false)
-    private TeacherStatus teacher_status;
+    private TeacherStatus teacherStatus;
 
 }

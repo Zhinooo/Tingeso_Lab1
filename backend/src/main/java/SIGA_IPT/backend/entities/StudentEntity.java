@@ -23,16 +23,16 @@ public class StudentEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)
-    private Long student_id;
+    private Long studentId;
 
     @Column(name = "student_run", nullable = false, unique = true)
-    private String student_run;
+    private String studentRun;
 
     @Column(name = "student_fullname", nullable = false)
-    private String student_fullname;
+    private String studentFullname;
 
     @Column(name = "student_email", nullable = false, unique = true)
-    private String student_email;
+    private String studentEmail;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "career_id", nullable = false)
@@ -44,6 +44,6 @@ public class StudentEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "student_status", nullable = false)
-    private StudentStatus student_status;
+    private StudentStatus studentStatus;
 
 }

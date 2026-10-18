@@ -22,19 +22,19 @@ public class CareerEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)
-    private Long career_id;
+    private Long careerId;
 
     @Column(name = "career_code", nullable = false, unique = true)
-    private String career_code;
+    private String careerCode;
 
     @Column(name = "career_name", nullable = false)
-    private String career_name;
+    private String careerName;
 
     @Column(name = "career_description", nullable = false)
-    private String career_description;
+    private String careerDescription;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "career_status", nullable = false)
-    private CareerStatus career_status;
+    private CareerStatus careerStatus;
 
 }

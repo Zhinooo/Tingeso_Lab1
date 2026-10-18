@@ -23,16 +23,16 @@ public class AcademicPeriodEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)
-    private Long academic_period_id;
+    private Long academicPeriodId;
 
     @Column(name = "academic_year", nullable = false)
-    private int academic_year;
+    private int academicYear;
 
     @Column(name = "academic_semester", nullable = false)
-    private int academic_semester;
+    private int academicSemester;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "academic_period_status", nullable = false)
-    private AcademicPeriodStatus academic_period_status;
+    private AcademicPeriodStatus academicPeriodStatus;
 
 }

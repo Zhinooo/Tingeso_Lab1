@@ -23,10 +23,10 @@ public class StudyplanEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)
-    private Long studyplan_id;
+    private Long studyplanId;
 
     @Column(name = "studyplan_identifier", nullable = false)
-    private String studyplan_identifier;
+    private String studyplanIdentifier;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "career_id", nullable = false)
@@ -34,6 +34,6 @@ public class StudyplanEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "studyplan_status", nullable = false)
-    private StudyplanStatus studyplan_status;
+    private StudyplanStatus studyplanStatus;
 
 }

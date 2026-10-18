@@ -21,25 +21,25 @@ public class CourseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)
-    private Long course_id;
+    private Long courseId;
 
     @Column(name = "course_code", nullable = false)
-    private String course_code;
+    private String courseCode;
 
     @Column(name = "course_name", nullable = false)
-    private String course_name;
+    private String courseName;
 
     @Column(name = "semester", nullable = false)
     private int semester;
 
     @Column(name = "theory_hours", nullable = false)
-    private int theory_hours;
+    private int theoryHours;
 
     @Column(name = "exercise_hours", nullable = false)
-    private int exercise_hours;
+    private int exerciseHours;
 
     @Column(name = "lab_hours", nullable = false)
-    private int lab_hours;
+    private int labHours;
 
     @Column(name = "sct", nullable = false)
     private int sct;
