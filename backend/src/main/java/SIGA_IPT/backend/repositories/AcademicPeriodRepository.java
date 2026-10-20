@@ -6,4 +6,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface AcademicPeriodRepository extends JpaRepository<AcademicPeriodEntity, Long>{
+
+    boolean existsByAcademicYearAndAcademicSemester(int academicYear, int academicSemester);
+
 }
