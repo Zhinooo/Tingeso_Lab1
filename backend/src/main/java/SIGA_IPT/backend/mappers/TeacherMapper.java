@@ -2,6 +2,7 @@ package SIGA_IPT.backend.mappers;
 
 import SIGA_IPT.backend.dtos.TeacherDTOs.TeacherRequestDTO;
 import SIGA_IPT.backend.dtos.TeacherDTOs.TeacherResponseDTO;
+import SIGA_IPT.backend.dtos.TeacherDTOs.TeacherUpdateRequestDTO;
 import SIGA_IPT.backend.entities.TeacherEntity;
 import org.springframework.stereotype.Component;
 
@@ -12,12 +13,15 @@ public class TeacherMapper {
 
     public TeacherEntity toEntity(TeacherRequestDTO dto){
         TeacherEntity teacher = new TeacherEntity();
-        updateEntity(teacher, dto);
+        teacher.setTeacherRun(dto.teacherRun());
+        teacher.setTeacherFullname(dto.teacherFullname());
+        teacher.setTeacherEmail(dto.teacherEmail());
+        teacher.setTeacherProtitle(dto.teacherProtitle());
+        teacher.setTeacherDegree(dto.teacherDegree());
         return teacher;
     }
 
-    public void updateEntity(TeacherEntity teacher, TeacherRequestDTO dto){
-        teacher.setTeacherRun(dto.teacherRun());
+    public void updateEntity(TeacherEntity teacher, TeacherUpdateRequestDTO dto){
         teacher.setTeacherFullname(dto.teacherFullname());
         teacher.setTeacherEmail(dto.teacherEmail());
         teacher.setTeacherProtitle(dto.teacherProtitle());

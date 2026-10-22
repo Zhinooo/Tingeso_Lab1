@@ -6,6 +6,7 @@ import SIGA_IPT.backend.entities.CareerEntity;
 import SIGA_IPT.backend.entities.StudyplanEntity;
 import SIGA_IPT.backend.mappers.StudyplanMapper;
 import SIGA_IPT.backend.repositories.CareerRepository;
+import SIGA_IPT.backend.repositories.CourseRepository;
 import SIGA_IPT.backend.repositories.StudentRepository;
 import SIGA_IPT.backend.repositories.StudyplanRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -21,15 +22,18 @@ public class StudyplanService {
     private final StudyplanRepository studyplanRepository;
     private final CareerRepository careerRepository;
     private final StudentRepository studentRepository;
+    private final CourseRepository courseRepository;
     private final StudyplanMapper studyplanMapper;
 
     public StudyplanService(StudyplanRepository studyplanRepository,
                             CareerRepository careerRepository,
                             StudentRepository studentRepository,
+                            CourseRepository courseRepository,
                             StudyplanMapper studyplanMapper){
         this.studyplanRepository = studyplanRepository;
         this.careerRepository = careerRepository;
         this.studentRepository = studentRepository;
+        this.courseRepository = courseRepository;
         this.studyplanMapper = studyplanMapper;
     }
 
@@ -100,6 +104,9 @@ public class StudyplanService {
 
         if (studentRepository.existsByStudyplan(studyplan)){
             throw new IllegalStateException("Cannot delete: the study plan has associated students.");
+        }
+        if (courseRepository.existsByStudyplan(studyplan)){
+            throw new IllegalStateException("Cannot delete: the study plan has associated courses.");
         }
 
         studyplanRepository.delete(studyplan);

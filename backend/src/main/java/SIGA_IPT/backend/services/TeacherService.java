@@ -2,6 +2,7 @@ package SIGA_IPT.backend.services;
 
 import SIGA_IPT.backend.dtos.TeacherDTOs.TeacherRequestDTO;
 import SIGA_IPT.backend.dtos.TeacherDTOs.TeacherResponseDTO;
+import SIGA_IPT.backend.dtos.TeacherDTOs.TeacherUpdateRequestDTO;
 import SIGA_IPT.backend.entities.AcademicPeriodEntity;
 import SIGA_IPT.backend.entities.TeacherEntity;
 import SIGA_IPT.backend.mappers.TeacherMapper;
@@ -31,16 +32,24 @@ public class TeacherService {
         if (dto.teacherRun() == null || dto.teacherRun().isBlank()){
             throw new IllegalArgumentException("The teacher RUN is required.");
         }
-        if (dto.teacherFullname() == null || dto.teacherFullname().isBlank()){
+        validateProfile(dto.teacherFullname(), dto.teacherEmail(), dto.teacherProtitle(), dto.teacherDegree());
+    }
+
+    private void validateUpdateFields(TeacherUpdateRequestDTO dto){
+        validateProfile(dto.teacherFullname(), dto.teacherEmail(), dto.teacherProtitle(), dto.teacherDegree());
+    }
+
+    private void validateProfile(String fullname, String email, String protitle, String degree){
+        if (fullname == null || fullname.isBlank()){
             throw new IllegalArgumentException("The teacher full name is required.");
         }
-        if (dto.teacherEmail() == null || dto.teacherEmail().isBlank()){
+        if (email == null || email.isBlank()){
             throw new IllegalArgumentException("The teacher email is required.");
         }
-        if (dto.teacherProtitle() == null || dto.teacherProtitle().isBlank()){
+        if (protitle == null || protitle.isBlank()){
             throw new IllegalArgumentException("The teacher professional title is required.");
         }
-        if (dto.teacherDegree() == null || dto.teacherDegree().isBlank()){
+        if (degree == null || degree.isBlank()){
             throw new IllegalArgumentException("The teacher academic degree is required.");
         }
     }
@@ -73,14 +82,9 @@ public class TeacherService {
         return teacherMapper.toResponse(findTeacherOrThrow(id));
     }
 
-    public TeacherResponseDTO update(Long id, TeacherRequestDTO dto){
-        validateFields(dto);
+    public TeacherResponseDTO update(Long id, TeacherUpdateRequestDTO dto){
+        validateUpdateFields(dto);
         TeacherEntity teacher = findTeacherOrThrow(id);
-
-        boolean runChanged = !teacher.getTeacherRun().equals(dto.teacherRun());
-        if (runChanged && teacherRepository.existsByTeacherRun(dto.teacherRun())){
-            throw new IllegalArgumentException("A teacher with this RUN already exists: " + dto.teacherRun());
-        }
 
         boolean emailChanged = !teacher.getTeacherEmail().equals(dto.teacherEmail());
         if (emailChanged && teacherRepository.existsByTeacherEmail(dto.teacherEmail())){
