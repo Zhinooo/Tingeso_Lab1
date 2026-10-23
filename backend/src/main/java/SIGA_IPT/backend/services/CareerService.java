@@ -55,6 +55,13 @@ public class CareerService {
         validateFields(dto);
         CareerEntity career = findCareerOrThrow(id);
 
+        if (studentRepository.existsByCareer(career)){
+            throw new IllegalStateException("Cannot edit: the career has associated students.");
+        }
+        if (studyplanRepository.existsByCareer(career)){
+            throw new IllegalStateException("Cannot edit: the career has associated study plans.");
+        }
+
         boolean codeChanged = !career.getCareerCode().equals(dto.careerCode());
         if (codeChanged && careerRepository.existsByCareerCode(dto.careerCode())){
             throw new IllegalArgumentException("A career with this code already exists: " + dto.careerCode());
