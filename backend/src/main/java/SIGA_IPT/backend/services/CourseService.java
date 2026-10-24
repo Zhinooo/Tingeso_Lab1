@@ -159,6 +159,13 @@ public class CourseService {
             throw new IllegalStateException("Cannot change the semester: the course is a prerequisite of other courses.");
         }
 
+        boolean hoursChanged = course.getTheoryHours() != dto.theoryHours()
+                || course.getExerciseHours() != dto.exerciseHours()
+                || course.getLabHours() != dto.labHours();
+        if (hoursChanged && sectionRepository.existsByCourse(course)){
+            throw new IllegalStateException("Cannot change the weekly hours: the course has associated sections.");
+        }
+
         List<CourseEntity> prerequisites = resolvePrerequisites(dto, studyplan);
         courseMapper.updateEntity(course, dto, prerequisites);
 

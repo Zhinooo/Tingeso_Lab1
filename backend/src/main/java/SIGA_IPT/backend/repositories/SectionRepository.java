@@ -7,6 +7,8 @@ import SIGA_IPT.backend.entities.TeacherEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface SectionRepository extends JpaRepository<SectionEntity, Long>{
 
@@ -17,5 +19,11 @@ public interface SectionRepository extends JpaRepository<SectionEntity, Long>{
     boolean existsByAcademicPeriod(AcademicPeriodEntity academicPeriod);
 
     boolean existsByCourse(CourseEntity course);
+
+    boolean existsByCourseAndAcademicPeriod(CourseEntity course, AcademicPeriodEntity academicPeriod);
+
+    List<SectionEntity> findByTeacherAndAcademicPeriod(TeacherEntity teacher, AcademicPeriodEntity academicPeriod);
+
+    List<SectionEntity> findByAcademicPeriod(AcademicPeriodEntity academicPeriod);
 
 }
