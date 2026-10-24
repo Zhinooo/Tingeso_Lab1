@@ -5,9 +5,12 @@ import SIGA_IPT.backend.entities.CourseEntity;
 import SIGA_IPT.backend.entities.SectionEntity;
 import SIGA_IPT.backend.entities.TeacherEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface SectionRepository extends JpaRepository<SectionEntity, Long>{
@@ -25,5 +28,10 @@ public interface SectionRepository extends JpaRepository<SectionEntity, Long>{
     List<SectionEntity> findByTeacherAndAcademicPeriod(TeacherEntity teacher, AcademicPeriodEntity academicPeriod);
 
     List<SectionEntity> findByAcademicPeriod(AcademicPeriodEntity academicPeriod);
+
+    List<SectionEntity> findByTeacher(TeacherEntity teacher);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    Optional<SectionEntity> findForUpdateBySectionId(Long sectionId);
 
 }

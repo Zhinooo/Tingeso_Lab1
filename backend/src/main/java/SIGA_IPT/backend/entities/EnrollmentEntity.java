@@ -17,6 +17,13 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class EnrollmentEntity {
 
+    public static final double PASSING_GRADE = 4.0;
+
+    public enum EnrollmentResult {
+        APPROVED,
+        FAILED
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)

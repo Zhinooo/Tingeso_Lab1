@@ -192,6 +192,12 @@ public class SectionService {
         return sectionMapper.toResponseList(sectionRepository.findByAcademicPeriod(academicPeriod));
     }
 
+    @Transactional(readOnly = true)
+    public List<SectionResponseDTO> getByTeacher(Long teacherId){
+        TeacherEntity teacher = findTeacherOrThrow(teacherId);
+        return sectionMapper.toResponseList(sectionRepository.findByTeacher(teacher));
+    }
+
     public SectionResponseDTO update(Long id, SectionUpdateRequestDTO dto){
         validateUpdateFields(dto);
         SectionEntity section = findSectionOrThrow(id);

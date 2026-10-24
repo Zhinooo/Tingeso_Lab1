@@ -2,6 +2,7 @@ package SIGA_IPT.backend.services;
 
 import SIGA_IPT.backend.dtos.EnrollmentDTOs.EnrollmentRequestDTO;
 import SIGA_IPT.backend.dtos.EnrollmentDTOs.EnrollmentResponseDTO;
+import SIGA_IPT.backend.dtos.EnrollmentDTOs.AvailableCourseDTO;
 import SIGA_IPT.backend.entities.AcademicPeriodEntity;
 import SIGA_IPT.backend.entities.CourseEntity;
 import SIGA_IPT.backend.entities.EnrollmentEntity;
@@ -17,6 +18,7 @@ import SIGA_IPT.backend.repositories.TuitionRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Isolation;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -25,6 +27,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Comparator;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,7 +37,6 @@ public class EnrollmentService {
 
     private static final int MIN_COURSES = 3;
     private static final int MAX_COURSES = 6;
-    private static final double PASSING_GRADE = 4.0;
 
     private final EnrollmentRepository enrollmentRepository;
     private final StudentRepository studentRepository;
@@ -89,6 +92,10 @@ public class EnrollmentService {
         return academicPeriodRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Academic period not found: " + id));
     }
 
+    private SectionEntity findSectionOrThrow(Long id){
+        return sectionRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Section not found: " + id));
+    }
+
     private void requireOpenPeriod(AcademicPeriodEntity academicPeriod){
         if (academicPeriod.getAcademicPeriodStatus() != AcademicPeriodEntity.AcademicPeriodStatus.OPEN){
             throw new IllegalStateException("The academic period is closed.");
@@ -99,9 +106,14 @@ public class EnrollmentService {
         return enrollmentRepository
                 .findByStudentAndAcademicPeriod_AcademicPeriodStatus(student, AcademicPeriodEntity.AcademicPeriodStatus.CLOSED)
                 .stream()
-                .filter(enrollment -> enrollment.getFinalGrade() != null && enrollment.getFinalGrade() >= PASSING_GRADE)
+                .filter(enrollment -> enrollment.getFinalGrade() != null && enrollment.getFinalGrade() >= EnrollmentEntity.PASSING_GRADE)
                 .map(enrollment -> enrollment.getCourse().getCourseId())
                 .collect(Collectors.toSet());
+    }
+
+    private Map<Long, SectionEntity> findSectionsByCourse(AcademicPeriodEntity academicPeriod){
+        return sectionRepository.findByAcademicPeriod(academicPeriod).stream()
+                .collect(Collectors.toMap(section -> section.getCourse().getCourseId(), section -> section));
     }
 
     private boolean isAvailable(CourseEntity course, Set<Long> approvedCourseIds, Map<Long, SectionEntity> sectionsByCourse){
@@ -151,6 +163,16 @@ public class EnrollmentService {
         }
     }
 
+    private void lockSections(List<Long> courseIds, Map<Long, SectionEntity> sectionsByCourse){
+        courseIds.stream()
+                .map(sectionsByCourse::get)
+                .filter(Objects::nonNull)
+                .map(SectionEntity::getSectionId)
+                .sorted()
+                .forEach(sectionRepository::findForUpdateBySectionId);
+    }
+
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public List<EnrollmentResponseDTO> create(EnrollmentRequestDTO dto){
         validateFields(dto);
 
@@ -167,8 +189,8 @@ public class EnrollmentService {
 
         Map<Long, CourseEntity> planCourses = courseRepository.findByStudyplan(student.getStudyplan()).stream()
                 .collect(Collectors.toMap(CourseEntity::getCourseId, course -> course));
-        Map<Long, SectionEntity> sectionsByCourse = sectionRepository.findByAcademicPeriod(academicPeriod).stream()
-                .collect(Collectors.toMap(section -> section.getCourse().getCourseId(), section -> section));
+        Map<Long, SectionEntity> sectionsByCourse = findSectionsByCourse(academicPeriod);
+        lockSections(dto.courseIds(), sectionsByCourse);
         List<EnrollmentEntity> current = enrollmentRepository.findByStudentAndAcademicPeriod(student, academicPeriod);
         Set<Long> currentCourseIds = current.stream()
                 .map(enrollment -> enrollment.getCourse().getCourseId())
@@ -247,9 +269,44 @@ public class EnrollmentService {
     }
 
     @Transactional(readOnly = true)
+    public List<EnrollmentResponseDTO> getAcademicHistory(Long studentId){
+        StudentEntity student = findStudentOrThrow(studentId);
+        return enrollmentMapper.toResponseList(
+                enrollmentRepository.findByStudentAndAcademicPeriod_AcademicPeriodStatus(student, AcademicPeriodEntity.AcademicPeriodStatus.CLOSED));
+    }
+
+    @Transactional(readOnly = true)
+    public List<AvailableCourseDTO> getAvailableOffer(Long studentId, Long academicPeriodId){
+        StudentEntity student = findStudentOrThrow(studentId);
+        AcademicPeriodEntity academicPeriod = findAcademicPeriodOrThrow(academicPeriodId);
+
+        Map<Long, SectionEntity> sectionsByCourse = findSectionsByCourse(academicPeriod);
+        Set<Long> approvedCourseIds = findApprovedCourseIds(student);
+        Set<Long> enrolledCourseIds = enrollmentRepository.findByStudentAndAcademicPeriod(student, academicPeriod).stream()
+                .map(enrollment -> enrollment.getCourse().getCourseId())
+                .collect(Collectors.toSet());
+
+        return courseRepository.findByStudyplan(student.getStudyplan()).stream()
+                .filter(course -> isAvailable(course, approvedCourseIds, sectionsByCourse))
+                .filter(course -> !enrolledCourseIds.contains(course.getCourseId()))
+                .sorted(Comparator.comparingInt(CourseEntity::getSemester).thenComparing(CourseEntity::getCourseCode))
+                .map(course -> {
+                    SectionEntity section = sectionsByCourse.get(course.getCourseId());
+                    return enrollmentMapper.toAvailableCourse(course, section, enrollmentRepository.countBySection(section));
+                })
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
     public List<EnrollmentResponseDTO> getByAcademicPeriod(Long academicPeriodId){
         AcademicPeriodEntity academicPeriod = findAcademicPeriodOrThrow(academicPeriodId);
         return enrollmentMapper.toResponseList(enrollmentRepository.findByAcademicPeriod(academicPeriod));
+    }
+
+    @Transactional(readOnly = true)
+    public List<EnrollmentResponseDTO> getBySection(Long sectionId){
+        SectionEntity section = findSectionOrThrow(sectionId);
+        return enrollmentMapper.toResponseList(enrollmentRepository.findBySection(section));
     }
 
     public void cancel(Long id){

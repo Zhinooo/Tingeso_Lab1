@@ -30,6 +30,22 @@ public class CareerService {
         this.careerMapper = careerMapper;
     }
 
+    private void validateFields(CareerRequestDTO dto){
+        if (dto.careerCode() == null || dto.careerCode().isBlank()){
+            throw new IllegalArgumentException("The career code is required.");
+        }
+        if (dto.careerName() == null || dto.careerName().isBlank()){
+            throw new IllegalArgumentException("The career name is required.");
+        }
+        if (dto.careerDescription() == null || dto.careerDescription().isBlank()){
+            throw new IllegalArgumentException("The career description is required.");
+        }
+    }
+
+    private CareerEntity findCareerOrThrow(Long id){
+        return careerRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Career not found: " + id));
+    }
+
     public CareerResponseDTO create(CareerRequestDTO dto){
         validateFields(dto);
 
@@ -73,6 +89,10 @@ public class CareerService {
     }
 
     public CareerResponseDTO changeStatus(Long id, CareerEntity.CareerStatus newStatus){
+        if (newStatus == null){
+            throw new IllegalArgumentException("The career status is required.");
+        }
+
         CareerEntity career = findCareerOrThrow(id);
         career.setCareerStatus(newStatus);
         return careerMapper.toResponse(careerRepository.save(career));
@@ -89,21 +109,5 @@ public class CareerService {
         }
 
         careerRepository.delete(career);
-    }
-
-    private void validateFields(CareerRequestDTO dto){
-        if (dto.careerCode() == null || dto.careerCode().isBlank()){
-            throw new IllegalArgumentException("The career code is required.");
-        }
-        if (dto.careerName() == null || dto.careerName().isBlank()){
-            throw new IllegalArgumentException("The career name is required.");
-        }
-        if (dto.careerDescription() == null || dto.careerDescription().isBlank()){
-            throw new IllegalArgumentException("The career description is required.");
-        }
-    }
-
-    private CareerEntity findCareerOrThrow(Long id){
-        return careerRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Career not found: " + id));
     }
 }

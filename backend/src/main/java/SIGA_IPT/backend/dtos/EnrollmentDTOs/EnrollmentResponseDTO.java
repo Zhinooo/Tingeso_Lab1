@@ -1,5 +1,7 @@
 package SIGA_IPT.backend.dtos.EnrollmentDTOs;
 
+import SIGA_IPT.backend.entities.EnrollmentEntity;
+
 import java.time.LocalDate;
 
 public record EnrollmentResponseDTO(
@@ -14,6 +16,7 @@ public record EnrollmentResponseDTO(
         int academicYear,
         int academicSemester,
         LocalDate enrollmentDate,
-        Double finalGrade
+        Double finalGrade,
+        EnrollmentEntity.EnrollmentResult result
 ) {
 }

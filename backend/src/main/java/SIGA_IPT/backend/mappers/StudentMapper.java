@@ -28,6 +28,11 @@ public class StudentMapper {
         student.setStudentEmail(dto.studentEmail());
     }
 
+    public void updateCareerAndPlan(StudentEntity student, CareerEntity career, StudyplanEntity studyplan){
+        student.setCareer(career);
+        student.setStudyplan(studyplan);
+    }
+    
     public StudentResponseDTO toResponse(StudentEntity student){
         return new StudentResponseDTO(
                 student.getStudentId(),

@@ -19,4 +19,6 @@ public interface StudyplanRepository extends JpaRepository<StudyplanEntity, Long
 
     List<StudyplanEntity> findByCareer(CareerEntity career);
 
+    Optional<StudyplanEntity> findByStudyplanIdentifierAndCareer(String studyplanIdentifier, CareerEntity career);
+
 }

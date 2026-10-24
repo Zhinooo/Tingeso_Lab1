@@ -97,6 +97,10 @@ public class TeacherService {
     }
 
     public TeacherResponseDTO changeStatus(Long id, TeacherEntity.TeacherStatus newStatus){
+        if (newStatus == null){
+            throw new IllegalArgumentException("The teacher status is required.");
+        }
+
         TeacherEntity teacher = findTeacherOrThrow(id);
 
         if (newStatus == TeacherEntity.TeacherStatus.INACTIVE && sectionRepository.existsByTeacherAndAcademicPeriod_AcademicPeriodStatus(teacher, AcademicPeriodEntity.AcademicPeriodStatus.OPEN)){

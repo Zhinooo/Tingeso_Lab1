@@ -1,6 +1,7 @@
 package SIGA_IPT.backend.services;
 
 import SIGA_IPT.backend.dtos.StudentDTOs.StudentRequestDTO;
+import SIGA_IPT.backend.dtos.StudentDTOs.StudentCareerChangeRequestDTO;
 import SIGA_IPT.backend.dtos.StudentDTOs.StudentResponseDTO;
 import SIGA_IPT.backend.dtos.StudentDTOs.StudentUpdateRequestDTO;
 import SIGA_IPT.backend.entities.CareerEntity;
@@ -70,6 +71,21 @@ public class StudentService {
         return studentRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Student not found: " + id));
     }
 
+    private CareerEntity findActiveCareerOrThrow(String careerCode){
+        CareerEntity career = careerRepository.findByCareerCode(careerCode)
+                .orElseThrow(() -> new EntityNotFoundException("Career not found: " + careerCode));
+        if (career.getCareerStatus() != CareerEntity.CareerStatus.ACTIVE){
+            throw new IllegalStateException("The career is not active.");
+        }
+        return career;
+    }
+
+    private StudyplanEntity findCurrentPlanOrThrow(CareerEntity career){
+        return studyplanRepository
+                .findByCareerAndStudyplanStatus(career, StudyplanEntity.StudyplanStatus.CURRENT)
+                .orElseThrow(() -> new IllegalStateException("The career has no current study plan."));
+    }
+
     public StudentResponseDTO create(StudentRequestDTO dto){
         validateFields(dto);
 
@@ -80,15 +96,8 @@ public class StudentService {
             throw new IllegalArgumentException("A student with this email already exists: " + dto.studentEmail());
         }
 
-        CareerEntity career = careerRepository.findByCareerCode(dto.careerCode())
-                .orElseThrow(() -> new EntityNotFoundException("Career not found: " + dto.careerCode()));
-        if (career.getCareerStatus() != CareerEntity.CareerStatus.ACTIVE){
-            throw new IllegalStateException("Cannot register: the career is not active.");
-        }
-
-        StudyplanEntity currentPlan = studyplanRepository
-                .findByCareerAndStudyplanStatus(career, StudyplanEntity.StudyplanStatus.CURRENT)
-                .orElseThrow(() -> new IllegalStateException("Cannot register: the career has no current study plan."));
+        CareerEntity career = findActiveCareerOrThrow(dto.careerCode());
+        StudyplanEntity currentPlan = findCurrentPlanOrThrow(career);
 
         StudentEntity student = studentMapper.toEntity(dto, career, currentPlan);
         student.setStudentStatus(StudentEntity.StudentStatus.REGULAR);
@@ -116,6 +125,31 @@ public class StudentService {
         }
 
         studentMapper.updateEntity(student, dto);
+
+        return studentMapper.toResponse(studentRepository.save(student));
+    }
+
+    public StudentResponseDTO changeCareerAndPlan(Long id, StudentCareerChangeRequestDTO dto){
+        if (dto.careerCode() == null || dto.careerCode().isBlank()){
+            throw new IllegalArgumentException("The career code is required.");
+        }
+        StudentEntity student = findStudentOrThrow(id);
+
+        if (enrollmentRepository.existsByStudent(student)){
+            throw new IllegalStateException("Cannot change the career or study plan: the student has enrollments or academic history.");
+        }
+
+        CareerEntity career = findActiveCareerOrThrow(dto.careerCode());
+
+        StudyplanEntity studyplan;
+        if (dto.studyplanIdentifier() == null || dto.studyplanIdentifier().isBlank()){
+            studyplan = findCurrentPlanOrThrow(career);
+        } else {
+            studyplan = studyplanRepository.findByStudyplanIdentifierAndCareer(dto.studyplanIdentifier(), career)
+                    .orElseThrow(() -> new EntityNotFoundException("Study plan not found in this career: " + dto.studyplanIdentifier()));
+        }
+
+        studentMapper.updateCareerAndPlan(student, career, studyplan);
 
         return studentMapper.toResponse(studentRepository.save(student));
     }

@@ -37,6 +37,36 @@ public class StudyplanService {
         this.studyplanMapper = studyplanMapper;
     }
 
+    private void validateIdentifier(StudyplanRequestDTO dto){
+        if (dto.studyplanIdentifier() == null || dto.studyplanIdentifier().isBlank()){
+            throw new IllegalArgumentException("The study plan identifier is required.");
+        }
+    }
+
+    private StudyplanEntity findStudyplanOrThrow(Long id){
+        return studyplanRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Study plan not found: " + id));
+    }
+
+    private void demoteCurrentPlan(CareerEntity career){
+        studyplanRepository
+                .findByCareerAndStudyplanStatus(career, StudyplanEntity.StudyplanStatus.CURRENT)
+                .ifPresent(current -> {
+                    current.setStudyplanStatus(StudyplanEntity.StudyplanStatus.NOT_CURRENT);
+                    studyplanRepository.save(current);
+                });
+    }
+
+    private void demoteCurrentPlanExcept(StudyplanEntity keep){
+        studyplanRepository
+                .findByCareerAndStudyplanStatus(keep.getCareer(), StudyplanEntity.StudyplanStatus.CURRENT)
+                .filter(current -> !current.getStudyplanId().equals(keep.getStudyplanId()))
+                .ifPresent(current -> {
+                    current.setStudyplanStatus(StudyplanEntity.StudyplanStatus.NOT_CURRENT);
+                    studyplanRepository.save(current);
+                });
+    }
+
     public StudyplanResponseDTO create(StudyplanRequestDTO dto){
         validateIdentifier(dto);
 
@@ -89,6 +119,10 @@ public class StudyplanService {
     }
 
     public StudyplanResponseDTO changeStatus(Long id, StudyplanEntity.StudyplanStatus newStatus){
+        if (newStatus == null){
+            throw new IllegalArgumentException("The study plan status is required.");
+        }
+
         StudyplanEntity studyplan = findStudyplanOrThrow(id);
 
         if (newStatus == StudyplanEntity.StudyplanStatus.CURRENT){
@@ -110,35 +144,5 @@ public class StudyplanService {
         }
 
         studyplanRepository.delete(studyplan);
-    }
-
-    private void demoteCurrentPlan(CareerEntity career){
-        studyplanRepository
-                .findByCareerAndStudyplanStatus(career, StudyplanEntity.StudyplanStatus.CURRENT)
-                .ifPresent(current -> {
-                    current.setStudyplanStatus(StudyplanEntity.StudyplanStatus.NOT_CURRENT);
-                    studyplanRepository.save(current);
-                });
-    }
-
-    private void demoteCurrentPlanExcept(StudyplanEntity keep){
-        studyplanRepository
-                .findByCareerAndStudyplanStatus(keep.getCareer(), StudyplanEntity.StudyplanStatus.CURRENT)
-                .filter(current -> !current.getStudyplanId().equals(keep.getStudyplanId()))
-                .ifPresent(current -> {
-                    current.setStudyplanStatus(StudyplanEntity.StudyplanStatus.NOT_CURRENT);
-                    studyplanRepository.save(current);
-                });
-    }
-
-    private void validateIdentifier(StudyplanRequestDTO dto){
-        if (dto.studyplanIdentifier() == null || dto.studyplanIdentifier().isBlank()){
-            throw new IllegalArgumentException("The study plan identifier is required.");
-        }
-    }
-
-    private StudyplanEntity findStudyplanOrThrow(Long id){
-        return studyplanRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Study plan not found: " + id));
     }
 }
