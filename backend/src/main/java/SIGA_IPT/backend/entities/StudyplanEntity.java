@@ -3,14 +3,16 @@ package SIGA_IPT.backend.entities;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(
         name = "studyplans",
         uniqueConstraints = @UniqueConstraint(columnNames = {"studyplan_identifier", "career_id"})
 )
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class StudyplanEntity {

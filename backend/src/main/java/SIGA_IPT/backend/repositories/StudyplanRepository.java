@@ -17,8 +17,6 @@ public interface StudyplanRepository extends JpaRepository<StudyplanEntity, Long
 
     Optional<StudyplanEntity> findByCareerAndStudyplanStatus(CareerEntity career, StudyplanEntity.StudyplanStatus studyplanStatus);
 
-    List<StudyplanEntity> findByCareer(CareerEntity career);
-
     Optional<StudyplanEntity> findByStudyplanIdentifierAndCareer(String studyplanIdentifier, CareerEntity career);
 
 }

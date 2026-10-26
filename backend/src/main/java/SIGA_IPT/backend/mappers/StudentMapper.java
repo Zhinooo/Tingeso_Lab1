@@ -32,7 +32,7 @@ public class StudentMapper {
         student.setCareer(career);
         student.setStudyplan(studyplan);
     }
-    
+
     public StudentResponseDTO toResponse(StudentEntity student){
         return new StudentResponseDTO(
                 student.getStudentId(),

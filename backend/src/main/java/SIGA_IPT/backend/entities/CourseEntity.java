@@ -3,7 +3,8 @@ package SIGA_IPT.backend.entities;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +14,8 @@ import java.util.List;
         name = "courses",
         uniqueConstraints = @UniqueConstraint(columnNames = {"course_code", "studyplan_id"})
 )
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class CourseEntity {

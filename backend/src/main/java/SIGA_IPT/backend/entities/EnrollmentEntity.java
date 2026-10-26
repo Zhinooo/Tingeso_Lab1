@@ -3,7 +3,8 @@ package SIGA_IPT.backend.entities;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDate;
 
@@ -12,7 +13,8 @@ import java.time.LocalDate;
         name = "enrollments",
         uniqueConstraints = @UniqueConstraint(columnNames = {"student_id", "section_id"})
 )
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class EnrollmentEntity {
