@@ -74,16 +74,23 @@ public class StudyplanService {
             throw new IllegalArgumentException("The career code is required.");
         }
 
+        if (dto.current() == null){
+            throw new IllegalArgumentException("Indicate whether the study plan is current.");
+        }
+
         CareerEntity career = careerRepository.findByCareerCode(dto.careerCode()).orElseThrow(() -> new EntityNotFoundException("Career not found: " + dto.careerCode()));
 
         if (studyplanRepository.existsByStudyplanIdentifierAndCareer(dto.studyplanIdentifier(), career)){
             throw new IllegalArgumentException("This career already has a study plan with identifier: " + dto.studyplanIdentifier());
         }
 
-        demoteCurrentPlan(career);
-
         StudyplanEntity studyplan = studyplanMapper.toEntity(dto, career);
-        studyplan.setStudyplanStatus(StudyplanEntity.StudyplanStatus.CURRENT);
+        if (dto.current()){
+            demoteCurrentPlan(career);
+            studyplan.setStudyplanStatus(StudyplanEntity.StudyplanStatus.CURRENT);
+        } else {
+            studyplan.setStudyplanStatus(StudyplanEntity.StudyplanStatus.NOT_CURRENT);
+        }
 
         return studyplanMapper.toResponse(studyplanRepository.save(studyplan));
     }
