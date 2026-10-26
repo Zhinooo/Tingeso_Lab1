@@ -5,6 +5,7 @@ import SIGA_IPT.backend.dtos.EnrollmentDTOs.GradeRequestDTO;
 import SIGA_IPT.backend.entities.AcademicPeriodEntity;
 import SIGA_IPT.backend.entities.EnrollmentEntity;
 import SIGA_IPT.backend.entities.TeacherEntity;
+import SIGA_IPT.backend.exceptions.ForbiddenOperationException;
 import SIGA_IPT.backend.mappers.EnrollmentMapper;
 import SIGA_IPT.backend.repositories.EnrollmentRepository;
 import SIGA_IPT.backend.repositories.TeacherRepository;
@@ -55,7 +56,7 @@ public class GradeService {
         TeacherEntity teacher = findTeacherOrThrow(teacherId);
 
         if (!enrollment.getSection().getTeacher().getTeacherId().equals(teacher.getTeacherId())){
-            throw new IllegalStateException("Only the teacher in charge of the section can register its final grades.");
+            throw new ForbiddenOperationException("Only the teacher in charge of the section can register its final grades.");
         }
         if (enrollment.getAcademicPeriod().getAcademicPeriodStatus() != AcademicPeriodEntity.AcademicPeriodStatus.OPEN){
             throw new IllegalStateException("Cannot register the grade: the academic period is closed.");
