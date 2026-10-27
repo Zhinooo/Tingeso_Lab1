@@ -3,9 +3,12 @@ package SIGA_IPT.backend.controllers;
 import SIGA_IPT.backend.dtos.EnrollmentDTOs.AvailableCourseDTO;
 import SIGA_IPT.backend.dtos.EnrollmentDTOs.EnrollmentRequestDTO;
 import SIGA_IPT.backend.dtos.EnrollmentDTOs.EnrollmentResponseDTO;
+import SIGA_IPT.backend.services.CurrentUserService;
 import SIGA_IPT.backend.services.EnrollmentService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,14 +25,25 @@ import java.util.List;
 public class EnrollmentController {
 
     private final EnrollmentService enrollmentService;
+    private final CurrentUserService currentUserService;
 
-    public EnrollmentController(EnrollmentService enrollmentService){
+    public EnrollmentController(EnrollmentService enrollmentService,
+                                CurrentUserService currentUserService){
         this.enrollmentService = enrollmentService;
+        this.currentUserService = currentUserService;
+    }
+
+    private Long studentIdOf(Jwt jwt){
+        return currentUserService.requireStudentId(jwt.getClaimAsString("email"));
+    }
+
+    private Long teacherIdOf(Jwt jwt){
+        return currentUserService.requireTeacherId(jwt.getClaimAsString("email"));
     }
 
     @PostMapping
-    public ResponseEntity<List<EnrollmentResponseDTO>> create(@RequestBody EnrollmentRequestDTO dto){
-        return ResponseEntity.status(HttpStatus.CREATED).body(enrollmentService.create(dto));
+    public ResponseEntity<List<EnrollmentResponseDTO>> create(@AuthenticationPrincipal Jwt jwt, @RequestBody EnrollmentRequestDTO dto){
+        return ResponseEntity.status(HttpStatus.CREATED).body(enrollmentService.create(studentIdOf(jwt), dto));
     }
 
     @GetMapping
@@ -52,11 +66,6 @@ public class EnrollmentController {
         return ResponseEntity.ok(enrollmentService.getAcademicHistory(studentId));
     }
 
-    @GetMapping("/available")
-    public ResponseEntity<List<AvailableCourseDTO>> getAvailableOffer(@RequestParam Long studentId, @RequestParam Long academicPeriodId){
-        return ResponseEntity.ok(enrollmentService.getAvailableOffer(studentId, academicPeriodId));
-    }
-
     @GetMapping("/academic-period/{academicPeriodId}")
     public ResponseEntity<List<EnrollmentResponseDTO>> getByAcademicPeriod(@PathVariable Long academicPeriodId){
         return ResponseEntity.ok(enrollmentService.getByAcademicPeriod(academicPeriodId));
@@ -67,9 +76,29 @@ public class EnrollmentController {
         return ResponseEntity.ok(enrollmentService.getBySection(sectionId));
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<List<EnrollmentResponseDTO>> getMine(@AuthenticationPrincipal Jwt jwt){
+        return ResponseEntity.ok(enrollmentService.getByStudent(studentIdOf(jwt)));
+    }
+
+    @GetMapping("/me/history")
+    public ResponseEntity<List<EnrollmentResponseDTO>> getMyAcademicHistory(@AuthenticationPrincipal Jwt jwt){
+        return ResponseEntity.ok(enrollmentService.getAcademicHistory(studentIdOf(jwt)));
+    }
+
+    @GetMapping("/me/available")
+    public ResponseEntity<List<AvailableCourseDTO>> getMyAvailableOffer(@AuthenticationPrincipal Jwt jwt, @RequestParam Long academicPeriodId){
+        return ResponseEntity.ok(enrollmentService.getAvailableOffer(studentIdOf(jwt), academicPeriodId));
+    }
+
+    @GetMapping("/me/section/{sectionId}")
+    public ResponseEntity<List<EnrollmentResponseDTO>> getMySectionEnrollments(@AuthenticationPrincipal Jwt jwt, @PathVariable Long sectionId){
+        return ResponseEntity.ok(enrollmentService.getBySectionForTeacher(sectionId, teacherIdOf(jwt)));
+    }
+
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> cancel(@PathVariable Long id){
-        enrollmentService.cancel(id);
+    public ResponseEntity<Void> cancel(@AuthenticationPrincipal Jwt jwt, @PathVariable Long id){
+        enrollmentService.cancel(id, studentIdOf(jwt));
         return ResponseEntity.noContent().build();
     }
 }

@@ -5,27 +5,36 @@ import SIGA_IPT.backend.dtos.TeacherDTOs.TeacherResponseDTO;
 import SIGA_IPT.backend.dtos.TeacherDTOs.TeacherUpdateRequestDTO;
 import SIGA_IPT.backend.entities.AcademicPeriodEntity;
 import SIGA_IPT.backend.entities.TeacherEntity;
+import SIGA_IPT.backend.identity.UserProvisioner;
 import SIGA_IPT.backend.mappers.TeacherMapper;
 import SIGA_IPT.backend.repositories.SectionRepository;
 import SIGA_IPT.backend.repositories.TeacherRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
+@Transactional
 public class TeacherService {
+
+    private static final String ROLE = "TEACHER";
+    private static final int MIN_PASSWORD_LENGTH = 8;
 
     private final TeacherRepository teacherRepository;
     private final SectionRepository sectionRepository;
     private final TeacherMapper teacherMapper;
+    private final UserProvisioner userProvisioner;
 
     public TeacherService(TeacherRepository teacherRepository,
                           SectionRepository sectionRepository,
-                          TeacherMapper teacherMapper) {
+                          TeacherMapper teacherMapper,
+                          UserProvisioner userProvisioner) {
         this.teacherRepository = teacherRepository;
         this.sectionRepository = sectionRepository;
         this.teacherMapper = teacherMapper;
+        this.userProvisioner = userProvisioner;
     }
 
     private void validateFields(TeacherRequestDTO dto){
@@ -33,6 +42,16 @@ public class TeacherService {
             throw new IllegalArgumentException("The teacher RUN is required.");
         }
         validateProfile(dto.teacherFullname(), dto.teacherEmail(), dto.teacherProtitle(), dto.teacherDegree());
+        validatePassword(dto.password());
+    }
+
+    private void validatePassword(String password){
+        if (password == null || password.isBlank()){
+            throw new IllegalArgumentException("The initial password is required.");
+        }
+        if (password.length() < MIN_PASSWORD_LENGTH){
+            throw new IllegalArgumentException("The initial password must have at least " + MIN_PASSWORD_LENGTH + " characters.");
+        }
     }
 
     private void validateUpdateFields(TeacherUpdateRequestDTO dto){
@@ -71,13 +90,17 @@ public class TeacherService {
         TeacherEntity teacher = teacherMapper.toEntity(dto);
         teacher.setTeacherStatus(TeacherEntity.TeacherStatus.ACTIVE);
 
-        return teacherMapper.toResponse(teacherRepository.save(teacher));
+        TeacherEntity saved = teacherRepository.save(teacher);
+        userProvisioner.create(saved.getTeacherEmail(), saved.getTeacherFullname(), dto.password(), ROLE);
+        return teacherMapper.toResponse(saved);
     }
 
+    @Transactional(readOnly = true)
     public List<TeacherResponseDTO> getAll(){
         return teacherMapper.toResponseList(teacherRepository.findAll());
     }
 
+    @Transactional(readOnly = true)
     public TeacherResponseDTO getById(Long id){
         return teacherMapper.toResponse(findTeacherOrThrow(id));
     }
@@ -91,9 +114,12 @@ public class TeacherService {
             throw new IllegalArgumentException("A teacher with this email already exists: " + dto.teacherEmail());
         }
 
+        String previousEmail = teacher.getTeacherEmail();
         teacherMapper.updateEntity(teacher, dto);
 
-        return teacherMapper.toResponse(teacherRepository.save(teacher));
+        TeacherEntity saved = teacherRepository.save(teacher);
+        userProvisioner.updateProfile(previousEmail, saved.getTeacherEmail(), saved.getTeacherFullname());
+        return teacherMapper.toResponse(saved);
     }
 
     public TeacherResponseDTO changeStatus(Long id, TeacherEntity.TeacherStatus newStatus){
@@ -120,5 +146,6 @@ public class TeacherService {
         }
 
         teacherRepository.delete(teacher);
+        userProvisioner.delete(teacher.getTeacherEmail());
     }
 }

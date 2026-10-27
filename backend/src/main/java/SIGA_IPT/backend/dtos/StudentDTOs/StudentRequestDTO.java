@@ -4,6 +4,7 @@ public record StudentRequestDTO(
         String studentRun,
         String studentFullname,
         String studentEmail,
-        String careerCode
+        String careerCode,
+        String password
 ) {
 }

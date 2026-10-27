@@ -1,0 +1,75 @@
+{
+  "realm": "siga",
+  "enabled": true,
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "roles": {
+    "realm": [
+      { "name": "ADMIN", "description": "Academic administrator" },
+      { "name": "TEACHER", "description": "Teacher" },
+      { "name": "STUDENT", "description": "Student" }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "siga-frontend",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "redirectUris": ["http://localhost:5173/*"],
+      "webOrigins": ["http://localhost:5173"],
+      "attributes": { "pkce.code.challenge.method": "S256" }
+    },
+    {
+      "clientId": "siga-backend",
+      "enabled": true,
+      "publicClient": false,
+      "serviceAccountsEnabled": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "${SIGA_BACKEND_CLIENT_SECRET}"
+    }
+  ],
+  "users": [
+    {
+      "username": "service-account-siga-backend",
+      "enabled": true,
+      "serviceAccountClientId": "siga-backend",
+      "clientRoles": { "realm-management": ["manage-users", "view-users", "query-users", "view-realm"] }
+    },
+    {
+      "username": "admin",
+      "email": "admin@siga.cl",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "Admin",
+      "lastName": "Siga",
+      "credentials": [{ "type": "password", "value": "Siga1234!", "temporary": false }],
+      "realmRoles": ["ADMIN"]
+    },
+    {
+      "username": "teacher",
+      "email": "teacher@siga.cl",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "Teacher",
+      "lastName": "Siga",
+      "credentials": [{ "type": "password", "value": "Siga1234!", "temporary": false }],
+      "realmRoles": ["TEACHER"]
+    },
+    {
+      "username": "student",
+      "email": "student@siga.cl",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "Student",
+      "lastName": "Siga",
+      "credentials": [{ "type": "password", "value": "Siga1234!", "temporary": false }],
+      "realmRoles": ["STUDENT"]
+    }
+  ]
+}

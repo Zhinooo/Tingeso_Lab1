@@ -3,9 +3,12 @@ package SIGA_IPT.backend.controllers;
 import SIGA_IPT.backend.dtos.SectionDTOs.SectionRequestDTO;
 import SIGA_IPT.backend.dtos.SectionDTOs.SectionResponseDTO;
 import SIGA_IPT.backend.dtos.SectionDTOs.SectionUpdateRequestDTO;
+import SIGA_IPT.backend.services.CurrentUserService;
 import SIGA_IPT.backend.services.SectionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,9 +25,12 @@ import java.util.List;
 public class SectionController {
 
     private final SectionService sectionService;
+    private final CurrentUserService currentUserService;
 
-    public SectionController(SectionService sectionService){
+    public SectionController(SectionService sectionService,
+                             CurrentUserService currentUserService){
         this.sectionService = sectionService;
+        this.currentUserService = currentUserService;
     }
 
     @PostMapping
@@ -35,6 +41,12 @@ public class SectionController {
     @GetMapping
     public ResponseEntity<List<SectionResponseDTO>> getAll(){
         return ResponseEntity.ok(sectionService.getAll());
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<List<SectionResponseDTO>> getMine(@AuthenticationPrincipal Jwt jwt){
+        Long teacherId = currentUserService.requireTeacherId(jwt.getClaimAsString("email"));
+        return ResponseEntity.ok(sectionService.getByTeacher(teacherId));
     }
 
     @GetMapping("/{id}")

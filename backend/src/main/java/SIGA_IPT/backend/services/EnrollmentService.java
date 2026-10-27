@@ -8,6 +8,7 @@ import SIGA_IPT.backend.entities.CourseEntity;
 import SIGA_IPT.backend.entities.EnrollmentEntity;
 import SIGA_IPT.backend.entities.SectionEntity;
 import SIGA_IPT.backend.entities.StudentEntity;
+import SIGA_IPT.backend.exceptions.ForbiddenOperationException;
 import SIGA_IPT.backend.mappers.EnrollmentMapper;
 import SIGA_IPT.backend.repositories.AcademicPeriodRepository;
 import SIGA_IPT.backend.repositories.CourseRepository;
@@ -63,9 +64,6 @@ public class EnrollmentService {
     }
 
     private void validateFields(EnrollmentRequestDTO dto){
-        if (dto.studentId() == null){
-            throw new IllegalArgumentException("The student is required.");
-        }
         if (dto.academicPeriodId() == null){
             throw new IllegalArgumentException("The academic period is required.");
         }
@@ -173,10 +171,10 @@ public class EnrollmentService {
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public List<EnrollmentResponseDTO> create(EnrollmentRequestDTO dto){
+    public List<EnrollmentResponseDTO> create(Long studentId,EnrollmentRequestDTO dto){
         validateFields(dto);
 
-        StudentEntity student = findStudentOrThrow(dto.studentId());
+        StudentEntity student = findStudentOrThrow(studentId);
         AcademicPeriodEntity academicPeriod = findAcademicPeriodOrThrow(dto.academicPeriodId());
 
         requireOpenPeriod(academicPeriod);
@@ -304,14 +302,26 @@ public class EnrollmentService {
     }
 
     @Transactional(readOnly = true)
+    public List<EnrollmentResponseDTO> getBySectionForTeacher(Long sectionId, Long teacherId){
+        SectionEntity section = findSectionOrThrow(sectionId);
+        if (!section.getTeacher().getTeacherId().equals(teacherId)){
+            throw new ForbiddenOperationException("Only the teacher in charge of the section can see its enrolled students.");
+        }
+        return enrollmentMapper.toResponseList(enrollmentRepository.findBySection(section));
+    }
+
+    @Transactional(readOnly = true)
     public List<EnrollmentResponseDTO> getBySection(Long sectionId){
         SectionEntity section = findSectionOrThrow(sectionId);
         return enrollmentMapper.toResponseList(enrollmentRepository.findBySection(section));
     }
 
-    public void cancel(Long id){
+    public void cancel(Long id, Long studentId){
         EnrollmentEntity enrollment = findEnrollmentOrThrow(id);
 
+        if (!enrollment.getStudent().getStudentId().equals(studentId)){
+            throw new ForbiddenOperationException("An enrollment can only be cancelled by its own student.");
+        }
         requireOpenPeriod(enrollment.getAcademicPeriod());
 
         if (enrollment.getFinalGrade() != null){

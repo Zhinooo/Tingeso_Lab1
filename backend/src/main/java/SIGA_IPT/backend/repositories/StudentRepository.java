@@ -6,6 +6,8 @@ import SIGA_IPT.backend.entities.StudyplanEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface StudentRepository extends JpaRepository<StudentEntity, Long>{
 
@@ -16,5 +18,7 @@ public interface StudentRepository extends JpaRepository<StudentEntity, Long>{
     boolean existsByStudentRun(String studentRun);
 
     boolean existsByStudentEmail(String studentEmail);
+
+    Optional<StudentEntity> findByStudentEmail(String studentEmail);
 
 }

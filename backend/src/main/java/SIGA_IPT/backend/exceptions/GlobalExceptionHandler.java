@@ -48,6 +48,12 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.CONFLICT, ex.getMessage());
     }
 
+    @ExceptionHandler(IdentityProviderException.class)
+    public ResponseEntity<ErrorResponse> handleIdentityProvider(IdentityProviderException ex){
+        log.error("Identity provider error", ex);
+        return buildResponse(HttpStatus.BAD_GATEWAY, "The identity provider is not available. Try again later.");
+    }
+
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ErrorResponse> handleDataIntegrity(DataIntegrityViolationException ex){
         return buildResponse(HttpStatus.CONFLICT, "The operation conflicts with existing data.");

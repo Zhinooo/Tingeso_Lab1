@@ -7,6 +7,7 @@ import SIGA_IPT.backend.dtos.StudentDTOs.StudentUpdateRequestDTO;
 import SIGA_IPT.backend.entities.CareerEntity;
 import SIGA_IPT.backend.entities.StudentEntity;
 import SIGA_IPT.backend.entities.StudyplanEntity;
+import SIGA_IPT.backend.identity.UserProvisioner;
 import SIGA_IPT.backend.mappers.StudentMapper;
 import SIGA_IPT.backend.repositories.CareerRepository;
 import SIGA_IPT.backend.repositories.EnrollmentRepository;
@@ -23,25 +24,31 @@ import java.util.List;
 @Transactional
 public class StudentService {
 
+    private static final String ROLE = "STUDENT";
+    private static final int MIN_PASSWORD_LENGTH = 8;
+
     private final StudentRepository studentRepository;
     private final CareerRepository careerRepository;
     private final StudyplanRepository studyplanRepository;
     private final TuitionRepository tuitionRepository;
     private final EnrollmentRepository enrollmentRepository;
     private final StudentMapper studentMapper;
+    private final UserProvisioner userProvisioner;
 
     public StudentService(StudentRepository studentRepository,
                           CareerRepository careerRepository,
                           StudyplanRepository studyplanRepository,
                           TuitionRepository tuitionRepository,
                           EnrollmentRepository enrollmentRepository,
-                          StudentMapper studentMapper){
+                          StudentMapper studentMapper,
+                          UserProvisioner userProvisioner){
         this.studentRepository = studentRepository;
         this.careerRepository = careerRepository;
         this.studyplanRepository = studyplanRepository;
         this.tuitionRepository = tuitionRepository;
         this.enrollmentRepository = enrollmentRepository;
         this.studentMapper = studentMapper;
+        this.userProvisioner = userProvisioner;
     }
 
     private void validateFields(StudentRequestDTO dto){
@@ -52,6 +59,16 @@ public class StudentService {
             throw new IllegalArgumentException("The career code is required.");
         }
         validateProfile(dto.studentFullname(), dto.studentEmail());
+        validatePassword(dto.password());
+    }
+
+    private void validatePassword(String password){
+        if (password == null || password.isBlank()){
+            throw new IllegalArgumentException("The initial password is required.");
+        }
+        if (password.length() < MIN_PASSWORD_LENGTH){
+            throw new IllegalArgumentException("The initial password must have at least " + MIN_PASSWORD_LENGTH + " characters.");
+        }
     }
 
     private void validateUpdateFields(StudentUpdateRequestDTO dto){
@@ -102,7 +119,9 @@ public class StudentService {
         StudentEntity student = studentMapper.toEntity(dto, career, currentPlan);
         student.setStudentStatus(StudentEntity.StudentStatus.REGULAR);
 
-        return studentMapper.toResponse(studentRepository.save(student));
+        StudentEntity saved = studentRepository.save(student);
+        userProvisioner.create(saved.getStudentEmail(), saved.getStudentFullname(), dto.password(), ROLE);
+        return studentMapper.toResponse(saved);
     }
 
     @Transactional(readOnly = true)
@@ -124,9 +143,12 @@ public class StudentService {
             throw new IllegalArgumentException("A student with this email already exists: " + dto.studentEmail());
         }
 
+        String previousEmail = student.getStudentEmail();
         studentMapper.updateEntity(student, dto);
 
-        return studentMapper.toResponse(studentRepository.save(student));
+        StudentEntity saved = studentRepository.save(student);
+        userProvisioner.updateProfile(previousEmail, saved.getStudentEmail(), saved.getStudentFullname());
+        return studentMapper.toResponse(saved);
     }
 
     public StudentResponseDTO changeCareerAndPlan(Long id, StudentCareerChangeRequestDTO dto){
@@ -185,5 +207,6 @@ public class StudentService {
         }
 
         studentRepository.delete(student);
+        userProvisioner.delete(student.getStudentEmail());
     }
 }

@@ -5,6 +5,7 @@ public record TeacherRequestDTO(
         String teacherFullname,
         String teacherEmail,
         String teacherProtitle,
-        String teacherDegree
+        String teacherDegree,
+        String password
 ) {
 }

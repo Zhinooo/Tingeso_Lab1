@@ -5,9 +5,12 @@ import SIGA_IPT.backend.dtos.StudentDTOs.StudentRequestDTO;
 import SIGA_IPT.backend.dtos.StudentDTOs.StudentResponseDTO;
 import SIGA_IPT.backend.dtos.StudentDTOs.StudentUpdateRequestDTO;
 import SIGA_IPT.backend.entities.StudentEntity;
+import SIGA_IPT.backend.services.CurrentUserService;
 import SIGA_IPT.backend.services.StudentService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,9 +28,12 @@ import java.util.List;
 public class StudentController {
 
     private final StudentService studentService;
+    private final CurrentUserService currentUserService;
 
-    public StudentController(StudentService studentService){
+    public StudentController(StudentService studentService,
+                             CurrentUserService currentUserService){
         this.studentService = studentService;
+        this.currentUserService = currentUserService;
     }
 
     @PostMapping
@@ -38,6 +44,11 @@ public class StudentController {
     @GetMapping
     public ResponseEntity<List<StudentResponseDTO>> getAll(){
         return ResponseEntity.ok(studentService.getAll());
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<StudentResponseDTO> getMine(@AuthenticationPrincipal Jwt jwt){
+        return ResponseEntity.ok(studentService.getById(currentUserService.requireStudentId(jwt.getClaimAsString("email"))));
     }
 
     @GetMapping("/{id}")
