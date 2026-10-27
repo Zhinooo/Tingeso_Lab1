@@ -6,13 +6,12 @@ Este README explica cómo levantar el entorno de desarrollo.
 
 ## Estructura del repositorio
 
-| Carpeta o archivo | Contenido |
-|---|---|
-| `backend/` | API REST (Spring Boot, Java 25, Gradle) |
+| Carpeta o archivo          | Contenido                                                      |
+| -------------------------- | -------------------------------------------------------------- |
+| `backend/`                 | API REST (Spring Boot, Java 25, Gradle)                        |
 | `keycloak/siga-realm.json` | Realm `siga` de Keycloak: roles, clientes y usuarios de prueba |
-| `docker-compose.yml` | Levanta MySQL, Keycloak y el backend |
-| `.env.example` | Plantilla de las variables del `docker-compose.yml` |
-| `Evaluacion1_v1.pdf` | Enunciado de la evaluación |
+| `docker-compose.yml`       | Levanta MySQL, Keycloak y el backend                           |
+| `Evaluacion1_v1.pdf`       | Enunciado de la evaluación                                     |
 
 ## Cómo levantar el entorno
 
@@ -20,13 +19,18 @@ Todo corre en contenedores con Docker Compose: **MySQL**, **Keycloak** y el **ba
 
 ### Una sola vez: configurar las variables
 
-Desde la raíz del proyecto:
+Crea un archivo `.env` en la raíz del proyecto (está ignorado por git) con este contenido:
 
-```bash
-cp .env.example .env
+```properties
+DB_NAME=tingeso1
+DB_USER=<usuario de MySQL>
+DB_PSW=<contraseña de ese usuario>
+DB_ROOT_PSW=<contraseña de root de MySQL>
+SIGA_BACKEND_CLIENT_SECRET=siga-backend-dev-secret
+SEED_DATA=true
 ```
 
-Y completa en `.env` (archivo ignorado por git):
+Qué significa cada variable:
 
 | Variable | Qué poner |
 |---|---|
