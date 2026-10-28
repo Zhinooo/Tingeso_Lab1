@@ -10,10 +10,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 @Transactional(readOnly = true)
 public class CurrentUserService {
+
+    private static final Set<String> APPLICATION_ROLES = Set.of("ADMIN", "TEACHER", "STUDENT");
 
     private final StudentRepository studentRepository;
     private final TeacherRepository teacherRepository;
@@ -47,11 +50,13 @@ public class CurrentUserService {
             fullName = teacher.getTeacherFullname();
         }
 
+        List<String> applicationRoles = roles.stream().filter(APPLICATION_ROLES::contains).toList();
+
         return new MeResponseDTO(
                 email,
                 username,
                 fullName,
-                roles,
+                applicationRoles,
                 student == null ? null : student.getStudentId(),
                 teacher == null ? null : teacher.getTeacherId()
         );

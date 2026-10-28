@@ -78,10 +78,10 @@ Los datos persisten en volúmenes de Docker (`db-data` y `keycloak-data`), así 
 
 ### Apagar y borrar
 
-| Comando | Efecto |
-|---|---|
-| `docker compose stop` | Apaga los contenedores y conserva todo |
-| `docker compose down` | Borra los contenedores, pero **conserva los datos** (volúmenes) |
+| Comando                  | Efecto                                                                                             |
+| ------------------------ | -------------------------------------------------------------------------------------------------- |
+| `docker compose stop`    | Apaga los contenedores y conserva todo                                                             |
+| `docker compose down`    | Borra los contenedores, pero **conserva los datos** (volúmenes)                                    |
 | `docker compose down -v` | Borra también los volúmenes: la base de datos y los usuarios de Keycloak vuelven a empezar de cero |
 
 Si cambias `keycloak/siga-realm.json` (por ejemplo, un cliente nuevo), Keycloak solo lo importa cuando el realm no existe: hay que usar `docker compose down -v` para que tome efecto.

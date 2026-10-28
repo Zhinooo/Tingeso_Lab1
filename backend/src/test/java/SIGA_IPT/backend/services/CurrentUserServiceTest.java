@@ -103,6 +103,19 @@ class CurrentUserServiceTest {
     }
 
     @Test
+    void getMeOnlyReturnsTheApplicationRoles(){
+        MeResponseDTO me = service.getMe("s@siga.cl", "student",
+                List.of("STUDENT", "default-roles-siga", "offline_access", "uma_authorization", "FACTOR_BEARER"));
+
+        assertThat(me.roles()).containsExactly("STUDENT");
+    }
+
+    @Test
+    void getMeReturnsEmptyRolesWhenThereIsNoApplicationRole(){
+        assertThat(service.getMe("s@siga.cl", "student", List.of("offline_access")).roles()).isEmpty();
+    }
+
+    @Test
     void getMeFallsBackToTheUsernameWithoutARecord(){
         when(studentRepository.findByStudentEmail("a@siga.cl")).thenReturn(Optional.empty());
         when(teacherRepository.findByTeacherEmail("a@siga.cl")).thenReturn(Optional.empty());
