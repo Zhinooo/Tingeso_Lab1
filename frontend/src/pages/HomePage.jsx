@@ -1,22 +1,16 @@
-import { useEffect, useState } from 'react'
-import meService from '../services/me.service'
+import Typography from '@mui/material/Typography'
+import useAuth from '../auth/useAuth'
 
 function HomePage() {
-  const [me, setMe] = useState(null)
-  const [error, setError] = useState('')
-
-  useEffect(() => {
-    meService
-      .getMe()
-      .then((response) => setMe(response.data))
-      .catch((err) => setError(err.message))
-  }, [])
+  const { me } = useAuth()
 
   return (
-    <div>
-      {error && <p>{error}</p>}
-      <pre>{JSON.stringify(me, null, 2)}</pre>
-    </div>
+    <>
+      <Typography variant="h4" gutterBottom>
+        Welcome, {me.fullName}
+      </Typography>
+      <Typography color="text.secondary">Role: {me.roles.join(', ')}</Typography>
+    </>
   )
 }
 
