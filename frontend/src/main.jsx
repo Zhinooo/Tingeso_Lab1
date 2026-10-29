@@ -1,14 +1,13 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import CssBaseline from '@mui/material/CssBaseline'
+import { ThemeProvider } from '@mui/material/styles'
 import App from './App.jsx'
 import AuthProvider from './auth/AuthProvider'
 import keycloak from './auth/keycloak'
-import { CssBaseline, ThemeProvider, createTheme } from '@mui/material'
+import theme from './theme'
 
 const root = createRoot(document.getElementById('root'))
-const theme = createTheme({
-  palette: { primary: { main: '#1565c0' } },
-})
 
 keycloak
   .init({
@@ -25,7 +24,7 @@ keycloak
             <App />
           </AuthProvider>
         </ThemeProvider>
-      </StrictMode>
+      </StrictMode>,
     )
   })
   .catch((error) => {
