@@ -72,7 +72,7 @@ class TeacherControllerTest extends ControllerTestBase {
 
     @Test
     void teacherReadsHisOwnRecord() throws Exception {
-        when(currentUserService.requireTeacherId("teacher@siga.cl")).thenReturn(1L);
+        when(currentUserService.requireTeacherId("kc-teacher")).thenReturn(1L);
         when(teacherService.getById(1L)).thenReturn(teacherDto());
 
         get("/api/teachers/me", teacher()).andExpect(status().isOk()).andExpect(jsonPath("$.teacherId").value(1));

@@ -24,7 +24,7 @@ class MeControllerTest extends ControllerTestBase {
 
     @Test
     void returnsTheProfileOfTheAuthenticatedUserWithoutTheRolePrefix() throws Exception {
-        when(currentUserService.getMe("student@siga.cl", "student", List.of("STUDENT")))
+        when(currentUserService.getMe("kc-student", "student@siga.cl", "student", List.of("STUDENT")))
                 .thenReturn(new MeResponseDTO("student@siga.cl", "student", "Student One", List.of("STUDENT"), 5L, null));
 
         get("/api/me", student())
@@ -36,7 +36,7 @@ class MeControllerTest extends ControllerTestBase {
 
     @Test
     void everyRoleCanReadItsProfile() throws Exception {
-        when(currentUserService.getMe("admin@siga.cl", "admin", List.of("ADMIN")))
+        when(currentUserService.getMe("kc-admin", "admin@siga.cl", "admin", List.of("ADMIN")))
                 .thenReturn(new MeResponseDTO("admin@siga.cl", "admin", "admin", List.of("ADMIN"), null, null));
 
         get("/api/me", admin()).andExpect(status().isOk()).andExpect(jsonPath("$.roles[0]").value("ADMIN"));

@@ -8,14 +8,15 @@ import org.springframework.stereotype.Component;
 public class NoOpUserProvisioner implements UserProvisioner {
 
     @Override
-    public void create(String email, String fullName, String password, String role){
+    public String create(String username, String email, String fullName, String password, String role){
+        return null;
     }
 
     @Override
-    public void updateProfile(String currentEmail, String newEmail, String fullName){
+    public void updateProfile(String keycloakUserId, String newEmail, String fullName){
     }
 
     @Override
-    public void delete(String email){
+    public void delete(String keycloakUserId){
     }
 }

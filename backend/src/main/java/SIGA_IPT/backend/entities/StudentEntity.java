@@ -36,6 +36,9 @@ public class StudentEntity {
     @Column(name = "student_email", nullable = false, unique = true)
     private String studentEmail;
 
+    @Column(name = "keycloak_user_id", unique = true)
+    private String keycloakUserId;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "career_id", nullable = false)
     private CareerEntity career;

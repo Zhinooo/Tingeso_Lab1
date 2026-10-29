@@ -48,7 +48,7 @@ public class StudentController {
 
     @GetMapping("/me")
     public ResponseEntity<StudentResponseDTO> getMine(@AuthenticationPrincipal Jwt jwt){
-        return ResponseEntity.ok(studentService.getById(currentUserService.requireStudentId(jwt.getClaimAsString("email"))));
+        return ResponseEntity.ok(studentService.getById(currentUserService.requireStudentId(jwt.getSubject())));
     }
 
     @GetMapping("/{id}")

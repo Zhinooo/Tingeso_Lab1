@@ -36,7 +36,7 @@ class GradeControllerTest extends ControllerTestBase {
 
     @BeforeEach
     void setUp(){
-        when(currentUserService.requireTeacherId("teacher@siga.cl")).thenReturn(7L);
+        when(currentUserService.requireTeacherId("kc-teacher")).thenReturn(7L);
     }
 
     private EnrollmentResponseDTO graded(){

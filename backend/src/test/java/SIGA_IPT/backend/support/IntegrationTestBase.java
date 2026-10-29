@@ -1,5 +1,9 @@
 package SIGA_IPT.backend.support;
 
+import SIGA_IPT.backend.entities.StudentEntity;
+import SIGA_IPT.backend.entities.TeacherEntity;
+import SIGA_IPT.backend.repositories.StudentRepository;
+import SIGA_IPT.backend.repositories.TeacherRepository;
 import com.jayway.jsonpath.JsonPath;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -32,6 +36,10 @@ public abstract class IntegrationTestBase extends MySqlContainerBase {
 
     @Autowired
     protected MockMvc mockMvc;
+    @Autowired
+    private StudentRepository studentRepository;
+    @Autowired
+    private TeacherRepository teacherRepository;
 
     public record Person(Long id, String email, RequestPostProcessor token) {
     }
@@ -44,11 +52,11 @@ public abstract class IntegrationTestBase extends MySqlContainerBase {
     }
 
     protected static RequestPostProcessor asAdmin(){
-        return asUser("ADMIN", "admin@siga.cl");
+        return asUser("ADMIN", "it-admin", "admin@siga.cl");
     }
 
-    protected static RequestPostProcessor asUser(String role, String email){
-        return jwt().jwt(token -> token.claim("email", email)).authorities(new SimpleGrantedAuthority("ROLE_" + role));
+    protected static RequestPostProcessor asUser(String role, String subject, String email){
+        return jwt().jwt(token -> token.subject(subject).claim("email", email)).authorities(new SimpleGrantedAuthority("ROLE_" + role));
     }
 
     protected String read(ResultActions result) throws Exception {
@@ -117,20 +125,28 @@ public abstract class IntegrationTestBase extends MySqlContainerBase {
         int n = next();
         String email = "it.teacher" + n + "@siga.cl";
         Long id = idOf(httpPost("/api/teachers", asAdmin(),
-                "{\"teacherRun\":\"IT-T" + n + "\",\"teacherFullname\":\"Teacher " + n + "\",\"teacherEmail\":\"" + email
+                "{\"teacherRun\":\"" + String.format("2%07d-1", n) + "\",\"teacherFullname\":\"Teacher " + n + "\",\"teacherEmail\":\"" + email
                         + "\",\"teacherProtitle\":\"Engineer\",\"teacherDegree\":\"Master\",\"password\":\"Initial123\"}")
                 .andExpect(status().isCreated()), "$.teacherId");
-        return new Person(id, email, asUser("TEACHER", email));
+        String subject = "it-teacher-" + n;
+        TeacherEntity teacher = teacherRepository.findById(id).orElseThrow();
+        teacher.setKeycloakUserId(subject);
+        teacherRepository.save(teacher);
+        return new Person(id, email, asUser("TEACHER", subject, email));
     }
 
     protected Person newStudent(World world) throws Exception {
         int n = next();
         String email = "it.student" + n + "@siga.cl";
         Long id = idOf(httpPost("/api/students", asAdmin(),
-                "{\"studentRun\":\"IT-S" + n + "\",\"studentFullname\":\"Student " + n + "\",\"studentEmail\":\"" + email
+                "{\"studentRun\":\"" + String.format("3%07d-k", n) + "\",\"studentFullname\":\"Student " + n + "\",\"studentEmail\":\"" + email
                         + "\",\"careerCode\":\"" + world.careerCode() + "\",\"password\":\"Initial123\"}")
                 .andExpect(status().isCreated()), "$.studentId");
-        return new Person(id, email, asUser("STUDENT", email));
+        String subject = "it-student-" + n;
+        StudentEntity student = studentRepository.findById(id).orElseThrow();
+        student.setKeycloakUserId(subject);
+        studentRepository.save(student);
+        return new Person(id, email, asUser("STUDENT", subject, email));
     }
 
     protected void payTuition(Person student, World world) throws Exception {

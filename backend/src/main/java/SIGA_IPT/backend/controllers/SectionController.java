@@ -45,7 +45,7 @@ public class SectionController {
 
     @GetMapping("/me")
     public ResponseEntity<List<SectionResponseDTO>> getMine(@AuthenticationPrincipal Jwt jwt){
-        Long teacherId = currentUserService.requireTeacherId(jwt.getClaimAsString("email"));
+        Long teacherId = currentUserService.requireTeacherId(jwt.getSubject());
         return ResponseEntity.ok(sectionService.getByTeacher(teacherId));
     }
 

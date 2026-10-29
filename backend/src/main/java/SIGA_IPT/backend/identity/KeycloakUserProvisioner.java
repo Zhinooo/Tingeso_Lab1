@@ -86,12 +86,12 @@ public class KeycloakUserProvisioner implements UserProvisioner {
         return Map.of("firstName", trimmed.substring(0, separator), "lastName", trimmed.substring(separator + 1).trim());
     }
 
-    private Optional<String> findUserId(String email){
+    private Optional<String> findUserId(String field, String value){
         List<Map<String, Object>> users = restClient.get()
                 .uri(uriBuilder -> uriBuilder.path("/admin/realms/{realm}/users")
-                        .queryParam("email", "{email}")
+                        .queryParam(field, "{value}")
                         .queryParam("exact", true)
-                        .build(realm, email))
+                        .build(realm, value))
                 .headers(headers -> headers.setBearerAuth(accessToken()))
                 .retrieve()
                 .body(new ParameterizedTypeReference<List<Map<String, Object>>>() {});
@@ -101,11 +101,11 @@ public class KeycloakUserProvisioner implements UserProvisioner {
         return Optional.of(users.get(0).get("id").toString());
     }
 
-    private String createUser(String email, String fullName, String password){
+    private String createUser(String username, String email, String fullName, String password){
         Map<String, Object> credential = Map.of("type", "password", "value", password, "temporary", true);
         Map<String, String> name = nameParts(fullName);
         Map<String, Object> body = Map.of(
-                "username", email,
+                "username", username,
                 "email", email,
                 "firstName", name.get("firstName"),
                 "lastName", name.get("lastName"),
@@ -187,11 +187,12 @@ public class KeycloakUserProvisioner implements UserProvisioner {
     }
 
     @Override
-    public void create(String email, String fullName, String password, String role){
+    public String create(String username, String email, String fullName, String password, String role){
+        String userId;
         String createdUserId = null;
         try {
-            Optional<String> existing = findUserId(email);
-            String userId = existing.orElseGet(() -> createUser(email, fullName, password));
+            Optional<String> existing = findUserId("email", email).or(() -> findUserId("username", username));
+            userId = existing.orElseGet(() -> createUser(username, email, fullName, password));
             if (existing.isEmpty()){
                 createdUserId = userId;
             }
@@ -206,17 +207,17 @@ public class KeycloakUserProvisioner implements UserProvisioner {
             String idToRemove = createdUserId;
             afterRollback(() -> deleteQuietly(idToRemove));
         }
+        return userId;
     }
 
     @Override
-    public void updateProfile(String currentEmail, String newEmail, String fullName){
+    public void updateProfile(String keycloakUserId, String newEmail, String fullName){
+        if (keycloakUserId == null){
+            return;
+        }
         try {
-            Optional<String> userId = findUserId(currentEmail);
-            if (userId.isEmpty()){
-                return;
-            }
             restClient.put()
-                    .uri("/admin/realms/{realm}/users/{id}", realm, userId.get())
+                    .uri("/admin/realms/{realm}/users/{id}", realm, keycloakUserId)
                     .headers(headers -> headers.setBearerAuth(accessToken()))
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(Map.of("email", newEmail,
@@ -235,13 +236,10 @@ public class KeycloakUserProvisioner implements UserProvisioner {
     }
 
     @Override
-    public void delete(String email){
-        afterCommit(() -> {
-            try {
-                findUserId(email).ifPresent(this::deleteUser);
-            } catch (RuntimeException ex){
-                log.error("Could not remove the Keycloak user of {}: {}", email, ex.getMessage());
-            }
-        });
+    public void delete(String keycloakUserId){
+        if (keycloakUserId == null){
+            return;
+        }
+        afterCommit(() -> deleteQuietly(keycloakUserId));
     }
 }

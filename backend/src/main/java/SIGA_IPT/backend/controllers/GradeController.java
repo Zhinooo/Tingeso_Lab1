@@ -28,7 +28,7 @@ public class GradeController {
 
     @PutMapping("/{enrollmentId}/grade")
     public ResponseEntity<EnrollmentResponseDTO> registerGrade(@AuthenticationPrincipal Jwt jwt, @PathVariable Long enrollmentId, @RequestBody GradeRequestDTO dto){
-        Long teacherId = currentUserService.requireTeacherId(jwt.getClaimAsString("email"));
+        Long teacherId = currentUserService.requireTeacherId(jwt.getSubject());
         return ResponseEntity.ok(gradeService.registerGrade(enrollmentId, teacherId, dto));
     }
 }

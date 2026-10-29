@@ -88,7 +88,7 @@ class StudentControllerTest extends ControllerTestBase {
 
     @Test
     void studentReadsHisOwnRecord() throws Exception {
-        when(currentUserService.requireStudentId("student@siga.cl")).thenReturn(1L);
+        when(currentUserService.requireStudentId("kc-student")).thenReturn(1L);
         when(studentService.getById(1L)).thenReturn(studentDto());
 
         get("/api/students/me", student()).andExpect(status().isOk()).andExpect(jsonPath("$.studentId").value(1));

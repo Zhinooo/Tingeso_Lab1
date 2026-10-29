@@ -27,6 +27,6 @@ public class MeController {
         List<String> roles = authentication.getAuthorities().stream()
                 .map(authority -> authority.getAuthority().replaceFirst("^ROLE_", ""))
                 .toList();
-        return ResponseEntity.ok(currentUserService.getMe(jwt.getClaimAsString("email"), jwt.getClaimAsString("preferred_username"), roles));
+        return ResponseEntity.ok(currentUserService.getMe(jwt.getSubject(), jwt.getClaimAsString("email"),jwt.getClaimAsString("preferred_username"), roles));
     }
 }

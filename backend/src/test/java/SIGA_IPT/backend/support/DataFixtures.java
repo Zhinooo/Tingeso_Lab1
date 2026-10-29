@@ -77,6 +77,7 @@ public class DataFixtures {
         teacher.setTeacherRun("T-" + n);
         teacher.setTeacherFullname("Teacher " + n);
         teacher.setTeacherEmail("teacher" + n + "@test.cl");
+        teacher.setKeycloakUserId("kc-teacher-" + n);
         teacher.setTeacherProtitle("Engineer");
         teacher.setTeacherDegree("Master");
         teacher.setTeacherStatus(TeacherEntity.TeacherStatus.ACTIVE);
@@ -89,6 +90,7 @@ public class DataFixtures {
         student.setStudentRun("S-" + n);
         student.setStudentFullname("Student " + n);
         student.setStudentEmail("student" + n + "@test.cl");
+        student.setKeycloakUserId("kc-student-" + n);
         student.setCareer(career);
         student.setStudyplan(plan);
         student.setStudentStatus(StudentEntity.StudentStatus.REGULAR);

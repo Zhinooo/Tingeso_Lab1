@@ -16,7 +16,6 @@ import java.net.URI;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.startsWith;
 import static org.springframework.test.web.client.ExpectedCount.once;
 import static org.springframework.test.web.client.ExpectedCount.never;
@@ -37,6 +36,8 @@ class KeycloakUserProvisionerTest {
     private static final String TOKEN_URL = "http://kc/realms/siga/protocol/openid-connect/token";
     private static final String USERS_URL = "http://kc/admin/realms/siga/users";
     private static final String TOKEN_JSON = "{\"access_token\":\"tok\",\"expires_in\":300}";
+    private static final String RUN = "12345678-9";
+    private static final String EMAIL = "a@test.cl";
 
     private MockRestServiceServer server;
     private KeycloakUserProvisioner provisioner;
@@ -63,19 +64,24 @@ class KeycloakUserProvisionerTest {
                 .andRespond(withSuccess(TOKEN_JSON, MediaType.APPLICATION_JSON));
     }
 
-    private void expectSearch(String email, String body){
+    private void expectSearch(String field, String value, String body){
         server.expect(requestTo(startsWith(USERS_URL + "?")))
                 .andExpect(method(HttpMethod.GET))
-                .andExpect(queryParam("email", email.replace("@", "%40")))
+                .andExpect(queryParam(field, value.replace("@", "%40")))
                 .andExpect(queryParam("exact", "true"))
                 .andExpect(header("Authorization", "Bearer tok"))
                 .andRespond(withSuccess(body, MediaType.APPLICATION_JSON));
     }
 
-    private void expectRoleAssignment(String role){
+    private void expectNoExistingUser(){
+        expectSearch("email", EMAIL, "[]");
+        expectSearch("username", RUN, "[]");
+    }
+
+    private void expectRoleAssignment(String userId, String role){
         server.expect(requestTo("http://kc/admin/realms/siga/roles/" + role))
                 .andRespond(withSuccess("{\"id\":\"r1\",\"name\":\"" + role + "\"}", MediaType.APPLICATION_JSON));
-        server.expect(requestTo("http://kc/admin/realms/siga/users/u1/role-mappings/realm"))
+        server.expect(requestTo(USERS_URL + "/" + userId + "/role-mappings/realm"))
                 .andExpect(method(HttpMethod.POST))
                 .andExpect(jsonPath("$[0].name").value(role))
                 .andRespond(withNoContent());
@@ -84,8 +90,8 @@ class KeycloakUserProvisionerTest {
     private void expectUserCreation(){
         server.expect(requestTo(USERS_URL))
                 .andExpect(method(HttpMethod.POST))
-                .andExpect(jsonPath("$.username").value("a@test.cl"))
-                .andExpect(jsonPath("$.email").value("a@test.cl"))
+                .andExpect(jsonPath("$.username").value(RUN))
+                .andExpect(jsonPath("$.email").value(EMAIL))
                 .andExpect(jsonPath("$.firstName").value("Ana"))
                 .andExpect(jsonPath("$.lastName").value("Perez"))
                 .andExpect(jsonPath("$.enabled").value(true))
@@ -104,29 +110,30 @@ class KeycloakUserProvisionerTest {
     }
 
     @Test
-    void createRegistersANewUserWithATemporaryPasswordAndTheRole(){
+    void createRegistersANewUserWithTheRunAsUsernameATemporaryPasswordAndTheRole(){
         expectToken();
-        expectSearch("a@test.cl", "[]");
+        expectNoExistingUser();
         expectUserCreation();
-        expectRoleAssignment("STUDENT");
+        expectRoleAssignment("u1", "STUDENT");
 
-        provisioner.create("a@test.cl", "Ana Perez", "Initial123", "STUDENT");
+        String userId = provisioner.create(RUN, EMAIL, "Ana Perez", "Initial123", "STUDENT");
 
+        assertThat(userId).isEqualTo("u1");
         server.verify();
     }
 
     @Test
     void aSingleWordNameIsUsedAsFirstAndLastName(){
         expectToken();
-        expectSearch("a@test.cl", "[]");
+        expectNoExistingUser();
         server.expect(requestTo(USERS_URL))
                 .andExpect(method(HttpMethod.POST))
                 .andExpect(jsonPath("$.firstName").value("Madonna"))
                 .andExpect(jsonPath("$.lastName").value("Madonna"))
                 .andRespond(withCreatedEntity(URI.create(USERS_URL + "/u1")));
-        expectRoleAssignment("STUDENT");
+        expectRoleAssignment("u1", "STUDENT");
 
-        provisioner.create("a@test.cl", "  Madonna ", "Initial123", "STUDENT");
+        provisioner.create(RUN, EMAIL, "  Madonna ", "Initial123", "STUDENT");
 
         server.verify();
     }
@@ -134,46 +141,59 @@ class KeycloakUserProvisionerTest {
     @Test
     void aCompoundSurnameStaysTogether(){
         expectToken();
-        expectSearch("a@test.cl", "[]");
+        expectNoExistingUser();
         server.expect(requestTo(USERS_URL))
                 .andExpect(method(HttpMethod.POST))
                 .andExpect(jsonPath("$.firstName").value("Ana"))
                 .andExpect(jsonPath("$.lastName").value("De La Cruz Soto"))
                 .andRespond(withCreatedEntity(URI.create(USERS_URL + "/u1")));
-        expectRoleAssignment("STUDENT");
+        expectRoleAssignment("u1", "STUDENT");
 
-        provisioner.create("a@test.cl", "Ana De La Cruz Soto", "Initial123", "STUDENT");
+        provisioner.create(RUN, EMAIL, "Ana De La Cruz Soto", "Initial123", "STUDENT");
 
         server.verify();
     }
 
     @Test
-    void createReusesAnExistingUserAndOnlyEnsuresTheRole(){
+    void createReusesAUserWithTheSameEmailAndOnlyEnsuresTheRole(){
         expectToken();
-        expectSearch("a@test.cl", "[{\"id\":\"u1\"}]");
-        expectRoleAssignment("TEACHER");
+        expectSearch("email", EMAIL, "[{\"id\":\"u1\"}]");
+        expectRoleAssignment("u1", "TEACHER");
         server.expect(never(), requestTo(USERS_URL)).andExpect(method(HttpMethod.POST));
 
-        provisioner.create("a@test.cl", "Ana Perez", "Initial123", "TEACHER");
+        String userId = provisioner.create(RUN, EMAIL, "Ana Perez", "Initial123", "TEACHER");
 
+        assertThat(userId).isEqualTo("u1");
+        server.verify();
+    }
+
+    @Test
+    void createReusesAUserWithTheSameRunWhenTheEmailIsNew(){
+        expectToken();
+        expectSearch("email", EMAIL, "[]");
+        expectSearch("username", RUN, "[{\"id\":\"u1\"}]");
+        expectRoleAssignment("u1", "TEACHER");
+        server.expect(never(), requestTo(USERS_URL)).andExpect(method(HttpMethod.POST));
+
+        String userId = provisioner.create(RUN, EMAIL, "Ana Perez", "Initial123", "TEACHER");
+
+        assertThat(userId).isEqualTo("u1");
         server.verify();
     }
 
     @Test
     void theAdminTokenIsRequestedOnlyOnceWhileItIsValid(){
         expectToken();
-        expectSearch("a@test.cl", "[{\"id\":\"u1\"}]");
-        expectSearch("b@test.cl", "[]");
-        expectRoleAssignment("STUDENT");
+        expectSearch("email", EMAIL, "[{\"id\":\"u1\"}]");
+        expectRoleAssignment("u1", "STUDENT");
+        expectSearch("email", "b@test.cl", "[]");
+        expectSearch("username", "87654321-k", "[]");
         server.expect(requestTo(USERS_URL)).andExpect(method(HttpMethod.POST))
                 .andRespond(withCreatedEntity(URI.create(USERS_URL + "/u2")));
-        server.expect(requestTo("http://kc/admin/realms/siga/roles/STUDENT"))
-                .andRespond(withSuccess("{\"id\":\"r1\",\"name\":\"STUDENT\"}", MediaType.APPLICATION_JSON));
-        server.expect(requestTo("http://kc/admin/realms/siga/users/u2/role-mappings/realm"))
-                .andRespond(withNoContent());
+        expectRoleAssignment("u2", "STUDENT");
 
-        provisioner.create("a@test.cl", "Ana", "Initial123", "STUDENT");
-        provisioner.create("b@test.cl", "Beto", "Initial123", "STUDENT");
+        assertThat(provisioner.create(RUN, EMAIL, "Ana", "Initial123", "STUDENT")).isEqualTo("u1");
+        assertThat(provisioner.create("87654321-k", "b@test.cl", "Beto", "Initial123", "STUDENT")).isEqualTo("u2");
 
         server.verify();
     }
@@ -182,7 +202,7 @@ class KeycloakUserProvisionerTest {
     void createFailsWhenKeycloakCannotGiveAToken(){
         server.expect(requestTo(TOKEN_URL)).andRespond(withServerError());
 
-        assertThatThrownBy(() -> provisioner.create("a@test.cl", "Ana", "Initial123", "STUDENT"))
+        assertThatThrownBy(() -> provisioner.create(RUN, EMAIL, "Ana", "Initial123", "STUDENT"))
                 .isInstanceOf(IdentityProviderException.class);
     }
 
@@ -190,29 +210,29 @@ class KeycloakUserProvisionerTest {
     void createFailsWhenTheTokenResponseHasNoAccessToken(){
         server.expect(requestTo(TOKEN_URL)).andRespond(withSuccess("{}", MediaType.APPLICATION_JSON));
 
-        assertThatThrownBy(() -> provisioner.create("a@test.cl", "Ana", "Initial123", "STUDENT"))
+        assertThatThrownBy(() -> provisioner.create(RUN, EMAIL, "Ana", "Initial123", "STUDENT"))
                 .isInstanceOf(IdentityProviderException.class);
     }
 
     @Test
     void createFailsWhenKeycloakDoesNotReturnTheNewUserId(){
         expectToken();
-        expectSearch("a@test.cl", "[]");
+        expectNoExistingUser();
         server.expect(requestTo(USERS_URL)).andExpect(method(HttpMethod.POST)).andRespond(withStatus(HttpStatus.CREATED));
 
-        assertThatThrownBy(() -> provisioner.create("a@test.cl", "Ana", "Initial123", "STUDENT"))
+        assertThatThrownBy(() -> provisioner.create(RUN, EMAIL, "Ana", "Initial123", "STUDENT"))
                 .isInstanceOf(IdentityProviderException.class);
     }
 
     @Test
     void createRemovesTheNewUserWhenTheRoleCannotBeAssigned(){
         expectToken();
-        expectSearch("a@test.cl", "[]");
+        expectNoExistingUser();
         expectUserCreation();
         server.expect(requestTo("http://kc/admin/realms/siga/roles/STUDENT")).andRespond(withStatus(HttpStatus.NOT_FOUND));
         server.expect(once(), requestTo(USERS_URL + "/u1")).andExpect(method(HttpMethod.DELETE)).andRespond(withNoContent());
 
-        assertThatThrownBy(() -> provisioner.create("a@test.cl", "Ana Perez", "Initial123", "STUDENT"))
+        assertThatThrownBy(() -> provisioner.create(RUN, EMAIL, "Ana Perez", "Initial123", "STUDENT"))
                 .isInstanceOf(IdentityProviderException.class);
 
         server.verify();
@@ -222,12 +242,12 @@ class KeycloakUserProvisionerTest {
     void createRemovesTheNewUserWhenTheTransactionRollsBack(){
         TransactionSynchronizationManager.initSynchronization();
         expectToken();
-        expectSearch("a@test.cl", "[]");
+        expectNoExistingUser();
         expectUserCreation();
-        expectRoleAssignment("STUDENT");
+        expectRoleAssignment("u1", "STUDENT");
         server.expect(once(), requestTo(USERS_URL + "/u1")).andExpect(method(HttpMethod.DELETE)).andRespond(withNoContent());
 
-        provisioner.create("a@test.cl", "Ana Perez", "Initial123", "STUDENT");
+        provisioner.create(RUN, EMAIL, "Ana Perez", "Initial123", "STUDENT");
         completeTransaction(TransactionSynchronization.STATUS_ROLLED_BACK);
 
         server.verify();
@@ -237,13 +257,27 @@ class KeycloakUserProvisionerTest {
     void createKeepsTheNewUserWhenTheTransactionCommits(){
         TransactionSynchronizationManager.initSynchronization();
         expectToken();
-        expectSearch("a@test.cl", "[]");
+        expectNoExistingUser();
         expectUserCreation();
-        expectRoleAssignment("STUDENT");
+        expectRoleAssignment("u1", "STUDENT");
         server.expect(never(), requestTo(USERS_URL + "/u1")).andExpect(method(HttpMethod.DELETE));
 
-        provisioner.create("a@test.cl", "Ana Perez", "Initial123", "STUDENT");
+        provisioner.create(RUN, EMAIL, "Ana Perez", "Initial123", "STUDENT");
         completeTransaction(TransactionSynchronization.STATUS_COMMITTED);
+
+        server.verify();
+    }
+
+    @Test
+    void createKeepsAReusedUserWhenTheTransactionRollsBack(){
+        TransactionSynchronizationManager.initSynchronization();
+        expectToken();
+        expectSearch("email", EMAIL, "[{\"id\":\"u1\"}]");
+        expectRoleAssignment("u1", "STUDENT");
+        server.expect(never(), requestTo(USERS_URL + "/u1")).andExpect(method(HttpMethod.DELETE));
+
+        provisioner.create(RUN, EMAIL, "Ana Perez", "Initial123", "STUDENT");
+        completeTransaction(TransactionSynchronization.STATUS_ROLLED_BACK);
 
         server.verify();
     }
@@ -252,40 +286,36 @@ class KeycloakUserProvisionerTest {
     void rollbackCleanupNeverBreaksWhenKeycloakFailsToDelete(){
         TransactionSynchronizationManager.initSynchronization();
         expectToken();
-        expectSearch("a@test.cl", "[]");
+        expectNoExistingUser();
         expectUserCreation();
-        expectRoleAssignment("STUDENT");
+        expectRoleAssignment("u1", "STUDENT");
         server.expect(requestTo(USERS_URL + "/u1")).andExpect(method(HttpMethod.DELETE)).andRespond(withServerError());
 
-        provisioner.create("a@test.cl", "Ana Perez", "Initial123", "STUDENT");
+        provisioner.create(RUN, EMAIL, "Ana Perez", "Initial123", "STUDENT");
         completeTransaction(TransactionSynchronization.STATUS_ROLLED_BACK);
 
         server.verify();
     }
 
     @Test
-    void updateProfileChangesTheEmailAndTheName(){
+    void updateProfileChangesTheEmailAndTheNameOfTheLinkedUser(){
         expectToken();
-        expectSearch("old@test.cl", "[{\"id\":\"u1\"}]");
         server.expect(requestTo(USERS_URL + "/u1"))
                 .andExpect(method(HttpMethod.PUT))
                 .andExpect(jsonPath("$.email").value("new@test.cl"))
                 .andExpect(jsonPath("$.firstName").value("New"))
                 .andExpect(jsonPath("$.lastName").value("Name"))
                 .andRespond(withNoContent());
+        server.expect(never(), requestTo(startsWith(USERS_URL + "?")));
 
-        provisioner.updateProfile("old@test.cl", "new@test.cl", "New Name");
+        provisioner.updateProfile("u1", "new@test.cl", "New Name");
 
         server.verify();
     }
 
     @Test
-    void updateProfileDoesNothingWhenThePersonHasNoKeycloakUser(){
-        expectToken();
-        expectSearch("old@test.cl", "[]");
-        server.expect(never(), requestTo(containsString("/users/"))).andExpect(method(HttpMethod.PUT));
-
-        provisioner.updateProfile("old@test.cl", "new@test.cl", "New Name");
+    void updateProfileDoesNothingWithoutALinkedUser(){
+        provisioner.updateProfile(null, "new@test.cl", "New Name");
 
         server.verify();
     }
@@ -293,20 +323,18 @@ class KeycloakUserProvisionerTest {
     @Test
     void updateProfileRejectsAnEmailAlreadyUsedInKeycloak(){
         expectToken();
-        expectSearch("old@test.cl", "[{\"id\":\"u1\"}]");
         server.expect(requestTo(USERS_URL + "/u1")).andRespond(withStatus(HttpStatus.CONFLICT));
 
-        assertThatThrownBy(() -> provisioner.updateProfile("old@test.cl", "taken@test.cl", "Name"))
+        assertThatThrownBy(() -> provisioner.updateProfile("u1", "taken@test.cl", "Name"))
                 .isInstanceOf(IllegalStateException.class).hasMessageContaining("already exists");
     }
 
     @Test
     void updateProfileReportsOtherKeycloakErrors(){
         expectToken();
-        expectSearch("old@test.cl", "[{\"id\":\"u1\"}]");
         server.expect(requestTo(USERS_URL + "/u1")).andRespond(withServerError());
 
-        assertThatThrownBy(() -> provisioner.updateProfile("old@test.cl", "new@test.cl", "Name"))
+        assertThatThrownBy(() -> provisioner.updateProfile("u1", "new@test.cl", "Name"))
                 .isInstanceOf(IdentityProviderException.class);
     }
 
@@ -314,17 +342,16 @@ class KeycloakUserProvisionerTest {
     void updateProfileReportsAnUnavailableKeycloak(){
         server.expect(requestTo(TOKEN_URL)).andRespond(withServerError());
 
-        assertThatThrownBy(() -> provisioner.updateProfile("old@test.cl", "new@test.cl", "Name"))
+        assertThatThrownBy(() -> provisioner.updateProfile("u1", "new@test.cl", "Name"))
                 .isInstanceOf(IdentityProviderException.class);
     }
 
     @Test
-    void deleteRemovesTheUserImmediatelyWithoutATransaction(){
+    void deleteRemovesTheLinkedUserImmediatelyWithoutATransaction(){
         expectToken();
-        expectSearch("a@test.cl", "[{\"id\":\"u1\"}]");
         server.expect(once(), requestTo(USERS_URL + "/u1")).andExpect(method(HttpMethod.DELETE)).andRespond(withNoContent());
 
-        provisioner.delete("a@test.cl");
+        provisioner.delete("u1");
 
         server.verify();
     }
@@ -333,10 +360,9 @@ class KeycloakUserProvisionerTest {
     void deleteWaitsForTheCommitInsideATransaction(){
         TransactionSynchronizationManager.initSynchronization();
         expectToken();
-        expectSearch("a@test.cl", "[{\"id\":\"u1\"}]");
         server.expect(once(), requestTo(USERS_URL + "/u1")).andExpect(method(HttpMethod.DELETE)).andRespond(withNoContent());
 
-        provisioner.delete("a@test.cl");
+        provisioner.delete("u1");
         assertThat(TransactionSynchronizationManager.getSynchronizations()).hasSize(1);
         completeTransaction(TransactionSynchronization.STATUS_COMMITTED);
 
@@ -347,20 +373,19 @@ class KeycloakUserProvisionerTest {
     void deleteDoesNothingWhenTheTransactionRollsBack(){
         TransactionSynchronizationManager.initSynchronization();
 
-        provisioner.delete("a@test.cl");
+        provisioner.delete("u1");
         completeTransaction(TransactionSynchronization.STATUS_ROLLED_BACK);
 
         server.verify();
     }
 
     @Test
-    void deleteIgnoresPeopleWithoutAKeycloakUser(){
-        expectToken();
-        expectSearch("a@test.cl", "[]");
-        server.expect(never(), requestTo(containsString("/users/"))).andExpect(method(HttpMethod.DELETE));
+    void deleteDoesNothingWithoutALinkedUser(){
+        TransactionSynchronizationManager.initSynchronization();
 
-        provisioner.delete("a@test.cl");
+        provisioner.delete(null);
 
+        assertThat(TransactionSynchronizationManager.getSynchronizations()).isEmpty();
         server.verify();
     }
 
@@ -368,7 +393,7 @@ class KeycloakUserProvisionerTest {
     void deleteNeverThrowsWhenKeycloakFails(){
         server.expect(requestTo(TOKEN_URL)).andRespond(withServerError());
 
-        provisioner.delete("a@test.cl");
+        provisioner.delete("u1");
 
         server.verify();
     }

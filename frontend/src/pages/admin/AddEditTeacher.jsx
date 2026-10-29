@@ -63,6 +63,7 @@ function AddEditTeacher() {
         <label>
           RUN
           <input name="teacherRun" value={form.teacherRun} onChange={handleChange} disabled={isEdit} />
+          <small>Enter the RUT as 12345678-k</small>
         </label>
         <label>
           Full name

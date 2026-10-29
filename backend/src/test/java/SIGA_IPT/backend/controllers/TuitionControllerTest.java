@@ -73,7 +73,7 @@ class TuitionControllerTest extends ControllerTestBase {
 
     @Test
     void studentReadsHisOwnTuitions() throws Exception {
-        when(currentUserService.requireStudentId("student@siga.cl")).thenReturn(1L);
+        when(currentUserService.requireStudentId("kc-student")).thenReturn(1L);
         when(tuitionService.getByStudent(1L)).thenReturn(List.of(tuition()));
 
         get("/api/tuitions/me", student()).andExpect(status().isOk()).andExpect(jsonPath("$[0].studentId").value(1));

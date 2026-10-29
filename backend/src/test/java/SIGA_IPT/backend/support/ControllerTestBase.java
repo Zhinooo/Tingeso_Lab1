@@ -31,7 +31,7 @@ public abstract class ControllerTestBase {
 
     private static RequestPostProcessor userWithRole(String role, String email){
         return jwt()
-                .jwt(token -> token.claim("email", email).claim("preferred_username", role.toLowerCase()))
+                .jwt(token -> token.subject("kc-" + role.toLowerCase()).claim("email", email).claim("preferred_username", role.toLowerCase()))
                 .authorities(new SimpleGrantedAuthority("ROLE_" + role));
     }
 

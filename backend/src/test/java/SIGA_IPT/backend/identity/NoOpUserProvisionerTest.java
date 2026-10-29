@@ -2,6 +2,7 @@ package SIGA_IPT.backend.identity;
 
 import org.junit.jupiter.api.Test;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
 class NoOpUserProvisionerTest {
@@ -11,9 +12,9 @@ class NoOpUserProvisionerTest {
         NoOpUserProvisioner provisioner = new NoOpUserProvisioner();
 
         assertThatCode(() -> {
-            provisioner.create("a@test.cl", "Ana", "Initial123", "STUDENT");
-            provisioner.updateProfile("a@test.cl", "b@test.cl", "Ana");
-            provisioner.delete("b@test.cl");
+            assertThat(provisioner.create("12345678-9", "a@test.cl", "Ana", "Initial123", "STUDENT")).isNull();
+            provisioner.updateProfile("u1", "b@test.cl", "Ana");
+            provisioner.delete("u1");
         }).doesNotThrowAnyException();
     }
 }

@@ -77,9 +77,10 @@ class StudentServiceTest {
     private StudentEntity student(StudentEntity.StudentStatus status){
         StudentEntity student = new StudentEntity();
         student.setStudentId(1L);
-        student.setStudentRun("1-9");
+        student.setStudentRun("12345678-9");
         student.setStudentFullname("Student One");
         student.setStudentEmail("s1@test.cl");
+        student.setKeycloakUserId("kc-1");
         student.setCareer(career);
         student.setStudyplan(currentPlan);
         student.setStudentStatus(status);
@@ -92,7 +93,7 @@ class StudentServiceTest {
 
     @Test
     void createRegistersRegularStudentWithTheCurrentPlan(){
-        StudentResponseDTO result = service.create(request("1-9", "Student", "s@test.cl", "10450"));
+        StudentResponseDTO result = service.create(request("12345678-9", "Student", "s@test.cl", "10450"));
 
         assertThat(result.studentStatus()).isEqualTo(StudentEntity.StudentStatus.REGULAR);
         assertThat(result.studyplanIdentifier()).isEqualTo("2021.3");
@@ -101,40 +102,65 @@ class StudentServiceTest {
 
     @Test
     void createProvisionsTheIdentityProviderUserWithTheStudentRole(){
-        service.create(new StudentRequestDTO("1-9", "Student", "s@test.cl", "10450", "Initial123"));
+        service.create(new StudentRequestDTO("12345678-9", "Student", "s@test.cl", "10450", "Initial123"));
 
-        verify(userProvisioner).create("s@test.cl", "Student", "Initial123", "STUDENT");
+        verify(userProvisioner).create("12345678-9", "s@test.cl", "Student", "Initial123", "STUDENT");
+    }
+
+    @Test
+    void createStoresTheIdentityProviderUserId(){
+        when(userProvisioner.create(any(), any(), any(), any(), any())).thenReturn("kc-new");
+        org.mockito.ArgumentCaptor<StudentEntity> saved = org.mockito.ArgumentCaptor.forClass(StudentEntity.class);
+
+        service.create(request("12345678-9", "Student", "s@test.cl", "10450"));
+
+        verify(studentRepository).save(saved.capture());
+        assertThat(saved.getValue().getKeycloakUserId()).isEqualTo("kc-new");
+    }
+
+    @Test
+    void createRejectsARunWithTheWrongFormat(){
+        for (String run : List.of("12.345.678-9", "12345678-K", "123456789", "123456-9", "12345678-")){
+            assertThatThrownBy(() -> service.create(request(run, "S", "e", "10450")))
+                    .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("format 12345678-k");
+        }
+        verify(studentRepository, never()).save(any());
+    }
+
+    @Test
+    void createAcceptsARunWithSevenDigitsAndCheckDigitK(){
+        assertThat(service.create(request("1234567-k", "Student", "s@test.cl", "10450")).studentRun()).isEqualTo("1234567-k");
     }
 
     @Test
     void createRequiresAnInitialPassword(){
-        assertThatThrownBy(() -> service.create(new StudentRequestDTO("1", "S", "e", "10450", " ")))
+        assertThatThrownBy(() -> service.create(new StudentRequestDTO("12345678-9", "S", "e", "10450", " ")))
                 .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("password is required");
-        assertThatThrownBy(() -> service.create(new StudentRequestDTO("1", "S", "e", "10450", null)))
+        assertThatThrownBy(() -> service.create(new StudentRequestDTO("12345678-9", "S", "e", "10450", null)))
                 .isInstanceOf(IllegalArgumentException.class);
-        verify(userProvisioner, never()).create(any(), any(), any(), any());
+        verify(userProvisioner, never()).create(any(), any(), any(), any(), any());
     }
 
     @Test
     void createRejectsAShortPassword(){
-        assertThatThrownBy(() -> service.create(new StudentRequestDTO("1", "S", "e", "10450", "short")))
+        assertThatThrownBy(() -> service.create(new StudentRequestDTO("12345678-9", "S", "e", "10450", "short")))
                 .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("at least 8");
     }
 
     @Test
     void createDoesNotReachTheIdentityProviderWhenARuleFails(){
-        when(studentRepository.existsByStudentRun("1")).thenReturn(true);
+        when(studentRepository.existsByStudentRun("12345678-9")).thenReturn(true);
 
-        assertThatThrownBy(() -> service.create(request("1", "S", "e", "10450"))).isInstanceOf(IllegalArgumentException.class);
-        verify(userProvisioner, never()).create(any(), any(), any(), any());
+        assertThatThrownBy(() -> service.create(request("12345678-9", "S", "e", "10450"))).isInstanceOf(IllegalArgumentException.class);
+        verify(userProvisioner, never()).create(any(), any(), any(), any(), any());
     }
 
     @Test
     void createFailsWhenTheIdentityProviderFails(){
         org.mockito.Mockito.doThrow(new SIGA_IPT.backend.exceptions.IdentityProviderException("down", null))
-                .when(userProvisioner).create(any(), any(), any(), any());
+                .when(userProvisioner).create(any(), any(), any(), any(), any());
 
-        assertThatThrownBy(() -> service.create(request("1-9", "S", "e", "10450")))
+        assertThatThrownBy(() -> service.create(request("12345678-9", "S", "e", "10450")))
                 .isInstanceOf(SIGA_IPT.backend.exceptions.IdentityProviderException.class);
     }
 
@@ -146,27 +172,27 @@ class StudentServiceTest {
 
     @Test
     void createRejectsBlankCareerCode(){
-        assertThatThrownBy(() -> service.create(request("1", "S", "e", "")))
+        assertThatThrownBy(() -> service.create(request("12345678-9", "S", "e", "")))
                 .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("career code");
     }
 
     @Test
     void createRejectsMissingName(){
-        assertThatThrownBy(() -> service.create(request("1", null, "e", "10450")))
+        assertThatThrownBy(() -> service.create(request("12345678-9", null, "e", "10450")))
                 .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("full name");
     }
 
     @Test
     void createRejectsMissingEmail(){
-        assertThatThrownBy(() -> service.create(request("1", "S", " ", "10450")))
+        assertThatThrownBy(() -> service.create(request("12345678-9", "S", " ", "10450")))
                 .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("email");
     }
 
     @Test
     void createRejectsDuplicatedRun(){
-        when(studentRepository.existsByStudentRun("1")).thenReturn(true);
+        when(studentRepository.existsByStudentRun("12345678-9")).thenReturn(true);
 
-        assertThatThrownBy(() -> service.create(request("1", "S", "e", "10450")))
+        assertThatThrownBy(() -> service.create(request("12345678-9", "S", "e", "10450")))
                 .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("RUN already exists");
         verify(studentRepository, never()).save(any());
     }
@@ -175,7 +201,7 @@ class StudentServiceTest {
     void createRejectsDuplicatedEmail(){
         when(studentRepository.existsByStudentEmail("e")).thenReturn(true);
 
-        assertThatThrownBy(() -> service.create(request("1", "S", "e", "10450")))
+        assertThatThrownBy(() -> service.create(request("12345678-9", "S", "e", "10450")))
                 .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("email already exists");
     }
 
@@ -183,14 +209,14 @@ class StudentServiceTest {
     void createFailsWhenCareerDoesNotExist(){
         when(careerRepository.findByCareerCode("X")).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.create(request("1", "S", "e", "X"))).isInstanceOf(EntityNotFoundException.class);
+        assertThatThrownBy(() -> service.create(request("12345678-9", "S", "e", "X"))).isInstanceOf(EntityNotFoundException.class);
     }
 
     @Test
     void createRejectsInactiveCareer(){
         career.setCareerStatus(CareerEntity.CareerStatus.INACTIVE);
 
-        assertThatThrownBy(() -> service.create(request("1", "S", "e", "10450")))
+        assertThatThrownBy(() -> service.create(request("12345678-9", "S", "e", "10450")))
                 .isInstanceOf(IllegalStateException.class).hasMessageContaining("not active");
     }
 
@@ -199,7 +225,7 @@ class StudentServiceTest {
         when(studyplanRepository.findByCareerAndStudyplanStatus(career, StudyplanEntity.StudyplanStatus.CURRENT))
                 .thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.create(request("1", "S", "e", "10450")))
+        assertThatThrownBy(() -> service.create(request("12345678-9", "S", "e", "10450")))
                 .isInstanceOf(IllegalStateException.class).hasMessageContaining("no current study plan");
     }
 
@@ -214,7 +240,7 @@ class StudentServiceTest {
     void getByIdReturnsStudent(){
         when(studentRepository.findById(1L)).thenReturn(Optional.of(student(StudentEntity.StudentStatus.REGULAR)));
 
-        assertThat(service.getById(1L).studentRun()).isEqualTo("1-9");
+        assertThat(service.getById(1L).studentRun()).isEqualTo("12345678-9");
     }
 
     @Test
@@ -240,7 +266,7 @@ class StudentServiceTest {
 
         service.update(1L, new StudentUpdateRequestDTO("New Name", "new@test.cl"));
 
-        verify(userProvisioner).updateProfile("s1@test.cl", "new@test.cl", "New Name");
+        verify(userProvisioner).updateProfile("kc-1", "new@test.cl", "New Name");
     }
 
     @Test
@@ -379,7 +405,7 @@ class StudentServiceTest {
         service.delete(1L);
 
         verify(studentRepository).delete(student);
-        verify(userProvisioner).delete("s1@test.cl");
+        verify(userProvisioner).delete("kc-1");
     }
 
     @Test

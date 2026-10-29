@@ -77,7 +77,7 @@ class SectionControllerTest extends ControllerTestBase {
 
     @Test
     void teacherReadsHisOwnSections() throws Exception {
-        when(currentUserService.requireTeacherId("teacher@siga.cl")).thenReturn(1L);
+        when(currentUserService.requireTeacherId("kc-teacher")).thenReturn(1L);
         when(sectionService.getByTeacher(1L)).thenReturn(List.of(section()));
 
         get("/api/sections/me", teacher()).andExpect(status().isOk()).andExpect(jsonPath("$[0].teacherId").value(1));

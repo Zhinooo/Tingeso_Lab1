@@ -21,6 +21,7 @@ public class TeacherService {
 
     private static final String ROLE = "TEACHER";
     private static final int MIN_PASSWORD_LENGTH = 8;
+    private static final String RUN_FORMAT = "\\d{7,8}-[0-9k]";
 
     private final TeacherRepository teacherRepository;
     private final SectionRepository sectionRepository;
@@ -40,6 +41,9 @@ public class TeacherService {
     private void validateFields(TeacherRequestDTO dto){
         if (dto.teacherRun() == null || dto.teacherRun().isBlank()){
             throw new IllegalArgumentException("The teacher RUN is required.");
+        }
+        if (!dto.teacherRun().matches(RUN_FORMAT)){
+            throw new IllegalArgumentException("The teacher RUN must have the format 12345678-k.");
         }
         validateProfile(dto.teacherFullname(), dto.teacherEmail(), dto.teacherProtitle(), dto.teacherDegree());
         validatePassword(dto.password());
@@ -91,7 +95,7 @@ public class TeacherService {
         teacher.setTeacherStatus(TeacherEntity.TeacherStatus.ACTIVE);
 
         TeacherEntity saved = teacherRepository.save(teacher);
-        userProvisioner.create(saved.getTeacherEmail(), saved.getTeacherFullname(), dto.password(), ROLE);
+        saved.setKeycloakUserId(userProvisioner.create(saved.getTeacherRun(), saved.getTeacherEmail(), saved.getTeacherFullname(), dto.password(), ROLE));
         return teacherMapper.toResponse(saved);
     }
 
@@ -114,11 +118,10 @@ public class TeacherService {
             throw new IllegalArgumentException("A teacher with this email already exists: " + dto.teacherEmail());
         }
 
-        String previousEmail = teacher.getTeacherEmail();
         teacherMapper.updateEntity(teacher, dto);
 
         TeacherEntity saved = teacherRepository.save(teacher);
-        userProvisioner.updateProfile(previousEmail, saved.getTeacherEmail(), saved.getTeacherFullname());
+        userProvisioner.updateProfile(saved.getKeycloakUserId(), saved.getTeacherEmail(), saved.getTeacherFullname());
         return teacherMapper.toResponse(saved);
     }
 
@@ -146,6 +149,6 @@ public class TeacherService {
         }
 
         teacherRepository.delete(teacher);
-        userProvisioner.delete(teacher.getTeacherEmail());
+        userProvisioner.delete(teacher.getKeycloakUserId());
     }
 }

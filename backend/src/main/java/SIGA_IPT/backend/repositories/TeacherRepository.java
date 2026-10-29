@@ -15,4 +15,6 @@ public interface TeacherRepository extends JpaRepository<TeacherEntity, Long>{
 
     Optional<TeacherEntity> findByTeacherEmail(String teacherEmail);
 
+    Optional<TeacherEntity> findByKeycloakUserId(String keycloakUserId);
+
 }

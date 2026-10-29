@@ -26,6 +26,7 @@ public class StudentService {
 
     private static final String ROLE = "STUDENT";
     private static final int MIN_PASSWORD_LENGTH = 8;
+    private static final String RUN_FORMAT = "\\d{7,8}-[0-9k]";
 
     private final StudentRepository studentRepository;
     private final CareerRepository careerRepository;
@@ -54,6 +55,9 @@ public class StudentService {
     private void validateFields(StudentRequestDTO dto){
         if (dto.studentRun() == null || dto.studentRun().isBlank()){
             throw new IllegalArgumentException("The student RUN is required.");
+        }
+        if (!dto.studentRun().matches(RUN_FORMAT)){
+            throw new IllegalArgumentException("The student RUN must have the format 12345678-k.");
         }
         if (dto.careerCode() == null || dto.careerCode().isBlank()){
             throw new IllegalArgumentException("The career code is required.");
@@ -120,7 +124,7 @@ public class StudentService {
         student.setStudentStatus(StudentEntity.StudentStatus.REGULAR);
 
         StudentEntity saved = studentRepository.save(student);
-        userProvisioner.create(saved.getStudentEmail(), saved.getStudentFullname(), dto.password(), ROLE);
+        saved.setKeycloakUserId(userProvisioner.create(saved.getStudentRun(), saved.getStudentEmail(), saved.getStudentFullname(), dto.password(), ROLE));
         return studentMapper.toResponse(saved);
     }
 
@@ -143,11 +147,10 @@ public class StudentService {
             throw new IllegalArgumentException("A student with this email already exists: " + dto.studentEmail());
         }
 
-        String previousEmail = student.getStudentEmail();
         studentMapper.updateEntity(student, dto);
 
         StudentEntity saved = studentRepository.save(student);
-        userProvisioner.updateProfile(previousEmail, saved.getStudentEmail(), saved.getStudentFullname());
+        userProvisioner.updateProfile(saved.getKeycloakUserId(), saved.getStudentEmail(), saved.getStudentFullname());
         return studentMapper.toResponse(saved);
     }
 
@@ -207,6 +210,6 @@ public class StudentService {
         }
 
         studentRepository.delete(student);
-        userProvisioner.delete(student.getStudentEmail());
+        userProvisioner.delete(student.getKeycloakUserId());
     }
 }

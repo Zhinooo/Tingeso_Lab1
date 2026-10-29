@@ -39,8 +39,8 @@ class EnrollmentControllerTest extends ControllerTestBase {
 
     @BeforeEach
     void setUp(){
-        when(currentUserService.requireStudentId("student@siga.cl")).thenReturn(1L);
-        when(currentUserService.requireTeacherId("teacher@siga.cl")).thenReturn(7L);
+        when(currentUserService.requireStudentId("kc-student")).thenReturn(1L);
+        when(currentUserService.requireTeacherId("kc-teacher")).thenReturn(7L);
     }
 
     private EnrollmentResponseDTO enrollment(){

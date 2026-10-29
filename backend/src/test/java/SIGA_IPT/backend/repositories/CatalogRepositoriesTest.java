@@ -163,6 +163,8 @@ class CatalogRepositoriesTest extends MySqlContainerBase {
         assertThat(studentRepository.existsByStudentEmail(student.getStudentEmail())).isTrue();
         assertThat(studentRepository.findByStudentEmail(student.getStudentEmail())).get().isEqualTo(student);
         assertThat(studentRepository.findByStudentEmail("none@test.cl")).isEmpty();
+        assertThat(studentRepository.findByKeycloakUserId(student.getKeycloakUserId())).get().isEqualTo(student);
+        assertThat(studentRepository.findByKeycloakUserId("none")).isEmpty();
     }
 
     @Test
@@ -193,6 +195,25 @@ class CatalogRepositoriesTest extends MySqlContainerBase {
         assertThat(teacherRepository.existsByTeacherEmail("none@test.cl")).isFalse();
         assertThat(teacherRepository.findByTeacherEmail(teacher.getTeacherEmail())).get().isEqualTo(teacher);
         assertThat(teacherRepository.findByTeacherEmail("none@test.cl")).isEmpty();
+        assertThat(teacherRepository.findByKeycloakUserId(teacher.getKeycloakUserId())).get().isEqualTo(teacher);
+        assertThat(teacherRepository.findByKeycloakUserId("none")).isEmpty();
+    }
+
+    @Test
+    void theKeycloakUserIdIsUnique(){
+        TeacherEntity teacher = data.teacher();
+        TeacherEntity duplicate = new TeacherEntity();
+        duplicate.setTeacherRun("T-dup");
+        duplicate.setTeacherFullname("Other");
+        duplicate.setTeacherEmail("other.teacher@test.cl");
+        duplicate.setTeacherProtitle("Engineer");
+        duplicate.setTeacherDegree("Master");
+        duplicate.setTeacherStatus(TeacherEntity.TeacherStatus.ACTIVE);
+        duplicate.setKeycloakUserId(teacher.getKeycloakUserId());
+
+        assertThatThrownBy(() -> {
+            teacherRepository.saveAndFlush(duplicate);
+        }).isInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test

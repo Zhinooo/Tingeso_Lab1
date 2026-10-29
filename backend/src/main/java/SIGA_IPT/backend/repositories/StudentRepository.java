@@ -21,4 +21,6 @@ public interface StudentRepository extends JpaRepository<StudentEntity, Long>{
 
     Optional<StudentEntity> findByStudentEmail(String studentEmail);
 
+    Optional<StudentEntity> findByKeycloakUserId(String keycloakUserId);
+
 }

@@ -34,11 +34,11 @@ public class EnrollmentController {
     }
 
     private Long studentIdOf(Jwt jwt){
-        return currentUserService.requireStudentId(jwt.getClaimAsString("email"));
+        return currentUserService.requireStudentId(jwt.getSubject());
     }
 
     private Long teacherIdOf(Jwt jwt){
-        return currentUserService.requireTeacherId(jwt.getClaimAsString("email"));
+        return currentUserService.requireTeacherId(jwt.getSubject());
     }
 
     @PostMapping

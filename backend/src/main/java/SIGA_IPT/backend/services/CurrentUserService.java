@@ -27,21 +27,21 @@ public class CurrentUserService {
         this.teacherRepository = teacherRepository;
     }
 
-    public Long requireStudentId(String email){
-        return studentRepository.findByStudentEmail(email == null ? "" : email)
+    public Long requireStudentId(String keycloakUserId){
+        return studentRepository.findByKeycloakUserId(keycloakUserId == null ? "" : keycloakUserId)
                 .map(StudentEntity::getStudentId)
                 .orElseThrow(() -> new ForbiddenOperationException("No student record is linked to the authenticated user."));
     }
 
-    public Long requireTeacherId(String email){
-        return teacherRepository.findByTeacherEmail(email == null ? "" : email)
+    public Long requireTeacherId(String keycloakUserId){
+        return teacherRepository.findByKeycloakUserId(keycloakUserId == null ? "" : keycloakUserId)
                 .map(TeacherEntity::getTeacherId)
                 .orElseThrow(() -> new ForbiddenOperationException("No teacher record is linked to the authenticated user."));
     }
 
-    public MeResponseDTO getMe(String email, String username, List<String> roles){
-        StudentEntity student = email == null ? null : studentRepository.findByStudentEmail(email).orElse(null);
-        TeacherEntity teacher = email == null ? null : teacherRepository.findByTeacherEmail(email).orElse(null);
+    public MeResponseDTO getMe(String keycloakUserId, String email, String username, List<String> roles){
+        StudentEntity student = keycloakUserId == null ? null : studentRepository.findByKeycloakUserId(keycloakUserId).orElse(null);
+        TeacherEntity teacher = keycloakUserId == null ? null : teacherRepository.findByKeycloakUserId(keycloakUserId).orElse(null);
 
         String fullName = username;
         if (student != null){

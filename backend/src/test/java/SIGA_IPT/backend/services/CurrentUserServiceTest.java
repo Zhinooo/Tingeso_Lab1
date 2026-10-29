@@ -19,6 +19,9 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -31,71 +34,70 @@ class CurrentUserServiceTest {
     private TeacherRepository teacherRepository;
 
     private CurrentUserService service;
-    private StudentEntity student;
-    private TeacherEntity teacher;
 
     @BeforeEach
     void setUp(){
         service = new CurrentUserService(studentRepository, teacherRepository);
-        student = new StudentEntity();
+        StudentEntity student = new StudentEntity();
         student.setStudentId(5L);
         student.setStudentFullname("Student Five");
-        teacher = new TeacherEntity();
+        TeacherEntity teacher = new TeacherEntity();
         teacher.setTeacherId(7L);
         teacher.setTeacherFullname("Teacher Seven");
-        when(studentRepository.findByStudentEmail("s@siga.cl")).thenReturn(Optional.of(student));
-        when(teacherRepository.findByTeacherEmail("t@siga.cl")).thenReturn(Optional.of(teacher));
-        when(studentRepository.findByStudentEmail("")).thenReturn(Optional.empty());
-        when(teacherRepository.findByTeacherEmail("")).thenReturn(Optional.empty());
+        when(studentRepository.findByKeycloakUserId("kc-student")).thenReturn(Optional.of(student));
+        when(teacherRepository.findByKeycloakUserId("kc-teacher")).thenReturn(Optional.of(teacher));
+        when(studentRepository.findByKeycloakUserId("")).thenReturn(Optional.empty());
+        when(teacherRepository.findByKeycloakUserId("")).thenReturn(Optional.empty());
     }
 
     @Test
     void requireStudentIdReturnsTheLinkedStudent(){
-        assertThat(service.requireStudentId("s@siga.cl")).isEqualTo(5L);
+        assertThat(service.requireStudentId("kc-student")).isEqualTo(5L);
     }
 
     @Test
-    void requireStudentIdRejectsUnknownEmails(){
-        when(studentRepository.findByStudentEmail("x@siga.cl")).thenReturn(Optional.empty());
+    void requireStudentIdRejectsUnknownUsers(){
+        when(studentRepository.findByKeycloakUserId("kc-unknown")).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.requireStudentId("x@siga.cl")).isInstanceOf(ForbiddenOperationException.class);
+        assertThatThrownBy(() -> service.requireStudentId("kc-unknown")).isInstanceOf(ForbiddenOperationException.class);
     }
 
     @Test
-    void requireStudentIdRejectsMissingEmail(){
+    void requireStudentIdRejectsMissingUserId(){
         assertThatThrownBy(() -> service.requireStudentId(null)).isInstanceOf(ForbiddenOperationException.class);
     }
 
     @Test
     void requireTeacherIdReturnsTheLinkedTeacher(){
-        assertThat(service.requireTeacherId("t@siga.cl")).isEqualTo(7L);
+        assertThat(service.requireTeacherId("kc-teacher")).isEqualTo(7L);
     }
 
     @Test
-    void requireTeacherIdRejectsUnknownEmails(){
-        when(teacherRepository.findByTeacherEmail("x@siga.cl")).thenReturn(Optional.empty());
+    void requireTeacherIdRejectsUnknownUsers(){
+        when(teacherRepository.findByKeycloakUserId("kc-unknown")).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.requireTeacherId("x@siga.cl")).isInstanceOf(ForbiddenOperationException.class);
+        assertThatThrownBy(() -> service.requireTeacherId("kc-unknown")).isInstanceOf(ForbiddenOperationException.class);
     }
 
     @Test
-    void requireTeacherIdRejectsMissingEmail(){
+    void requireTeacherIdRejectsMissingUserId(){
         assertThatThrownBy(() -> service.requireTeacherId(null)).isInstanceOf(ForbiddenOperationException.class);
     }
 
     @Test
     void getMeUsesTheStudentRecord(){
-        MeResponseDTO me = service.getMe("s@siga.cl", "student", List.of("STUDENT"));
+        MeResponseDTO me = service.getMe("kc-student", "s@siga.cl", "student", List.of("STUDENT"));
 
         assertThat(me.studentId()).isEqualTo(5L);
         assertThat(me.teacherId()).isNull();
         assertThat(me.fullName()).isEqualTo("Student Five");
+        assertThat(me.email()).isEqualTo("s@siga.cl");
         assertThat(me.roles()).containsExactly("STUDENT");
     }
 
     @Test
     void getMeUsesTheTeacherRecord(){
-        MeResponseDTO me = service.getMe("t@siga.cl", "teacher", List.of("TEACHER"));
+        MeResponseDTO me = service.getMe("kc-teacher", "t@siga.cl", "teacher", List.of("TEACHER"));
 
         assertThat(me.teacherId()).isEqualTo(7L);
         assertThat(me.studentId()).isNull();
@@ -104,7 +106,7 @@ class CurrentUserServiceTest {
 
     @Test
     void getMeOnlyReturnsTheApplicationRoles(){
-        MeResponseDTO me = service.getMe("s@siga.cl", "student",
+        MeResponseDTO me = service.getMe("kc-student", "s@siga.cl", "student",
                 List.of("STUDENT", "default-roles-siga", "offline_access", "uma_authorization", "FACTOR_BEARER"));
 
         assertThat(me.roles()).containsExactly("STUDENT");
@@ -112,26 +114,29 @@ class CurrentUserServiceTest {
 
     @Test
     void getMeReturnsEmptyRolesWhenThereIsNoApplicationRole(){
-        assertThat(service.getMe("s@siga.cl", "student", List.of("offline_access")).roles()).isEmpty();
+        assertThat(service.getMe("kc-student", "s@siga.cl", "student", List.of("offline_access")).roles()).isEmpty();
     }
 
     @Test
     void getMeFallsBackToTheUsernameWithoutARecord(){
-        when(studentRepository.findByStudentEmail("a@siga.cl")).thenReturn(Optional.empty());
-        when(teacherRepository.findByTeacherEmail("a@siga.cl")).thenReturn(Optional.empty());
+        when(studentRepository.findByKeycloakUserId("kc-admin")).thenReturn(Optional.empty());
+        when(teacherRepository.findByKeycloakUserId("kc-admin")).thenReturn(Optional.empty());
 
-        MeResponseDTO me = service.getMe("a@siga.cl", "admin", List.of("ADMIN"));
+        MeResponseDTO me = service.getMe("kc-admin", "a@siga.cl", "admin", List.of("ADMIN"));
 
         assertThat(me.fullName()).isEqualTo("admin");
+        assertThat(me.email()).isEqualTo("a@siga.cl");
         assertThat(me.studentId()).isNull();
         assertThat(me.teacherId()).isNull();
     }
 
     @Test
-    void getMeWithoutEmailDoesNotQueryTheRecords(){
-        MeResponseDTO me = service.getMe(null, "admin", List.of("ADMIN"));
+    void getMeWithoutUserIdDoesNotQueryTheRecords(){
+        MeResponseDTO me = service.getMe(null, null, "admin", List.of("ADMIN"));
 
         assertThat(me.fullName()).isEqualTo("admin");
         assertThat(me.email()).isNull();
+        verify(studentRepository, never()).findByKeycloakUserId(any());
+        verify(teacherRepository, never()).findByKeycloakUserId(any());
     }
 }

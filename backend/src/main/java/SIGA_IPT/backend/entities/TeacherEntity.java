@@ -33,6 +33,9 @@ public class TeacherEntity {
     @Column(name = "teacher_email", nullable = false, unique = true)
     private String teacherEmail;
 
+    @Column(name = "keycloak_user_id", unique = true)
+    private String keycloakUserId;
+
     @Column(name = "teacher_protitle", nullable = false)
     private String teacherProtitle;
 
