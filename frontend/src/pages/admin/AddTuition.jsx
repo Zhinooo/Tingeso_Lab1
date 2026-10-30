@@ -1,26 +1,38 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import ErrorAlert from '../../components/ErrorAlert'
+import FormCard from '../../components/FormCard'
+import PageHeader from '../../components/PageHeader'
+import TuitionFormFields from '../../components/tuitions/TuitionFormFields'
+import { FINAL_STUDENT_STATUSES } from '../../constants/students'
 import academicPeriodService from '../../services/academicPeriod.service'
 import studentService from '../../services/student.service'
 import tuitionService from '../../services/tuition.service'
 
-const emptyForm = { studentId: '', academicPeriodId: '' }
-
 function AddTuition() {
+  const [searchParams] = useSearchParams()
   const navigate = useNavigate()
-  const [form, setForm] = useState(emptyForm)
+  const [form, setForm] = useState({ studentId: '', academicPeriodId: searchParams.get('academicPeriodId') ?? '' })
   const [students, setStudents] = useState([])
   const [periods, setPeriods] = useState([])
   const [error, setError] = useState('')
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     Promise.all([studentService.getAll(), academicPeriodService.getAll()])
       .then(([studentsResponse, periodsResponse]) => {
         setStudents(studentsResponse.data)
-        setPeriods(periodsResponse.data.filter((period) => period.academicPeriodStatus === 'OPEN'))
+        setPeriods(periodsResponse.data)
       })
       .catch((err) => setError(err.message))
   }, [])
+
+  const availableStudents = students.filter((student) => !FINAL_STUDENT_STATUSES.includes(student.studentStatus))
+  const openPeriods = periods.filter((period) => period.academicPeriodStatus === 'OPEN')
+  const isOpenPeriodSelected = openPeriods.some((period) => String(period.academicPeriodId) === form.academicPeriodId)
+  const listUrl = form.academicPeriodId
+    ? `/admin/tuitions?academicPeriodId=${form.academicPeriodId}`
+    : '/admin/tuitions'
 
   const handleChange = (event) => {
     const { name, value } = event.target
@@ -30,43 +42,29 @@ function AddTuition() {
   const handleSubmit = (event) => {
     event.preventDefault()
     setError('')
+    setSaving(true)
     tuitionService
       .create({ studentId: Number(form.studentId), academicPeriodId: Number(form.academicPeriodId) })
-      .then(() => navigate('/admin/tuitions'))
-      .catch((err) => setError(err.message))
+      .then(() => navigate(listUrl))
+      .catch((err) => {
+        setError(err.message)
+        setSaving(false)
+      })
   }
 
   return (
-    <div>
-      <h1>New tuition</h1>
-      {error && <p>{error}</p>}
-      <form onSubmit={handleSubmit}>
-        <label>
-          Student
-          <select name="studentId" value={form.studentId} onChange={handleChange}>
-            <option value="">Select a student</option>
-            {students.map((student) => (
-              <option key={student.studentId} value={student.studentId}>
-                {student.studentRun} - {student.studentFullname}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          Academic period
-          <select name="academicPeriodId" value={form.academicPeriodId} onChange={handleChange}>
-            <option value="">Select a period</option>
-            {periods.map((period) => (
-              <option key={period.academicPeriodId} value={period.academicPeriodId}>
-                {`${period.academicYear}-${period.academicSemester}`}
-              </option>
-            ))}
-          </select>
-        </label>
-        <button type="submit">Save</button>
-        <Link to="/admin/tuitions">Cancel</Link>
-      </form>
-    </div>
+    <>
+      <PageHeader title="New tuition" backTo={listUrl} />
+      <ErrorAlert message={error} />
+      <FormCard onSubmit={handleSubmit} cancelTo={listUrl} saving={saving}>
+        <TuitionFormFields
+          form={{ ...form, academicPeriodId: isOpenPeriodSelected ? form.academicPeriodId : '' }}
+          students={availableStudents}
+          periods={openPeriods}
+          onChange={handleChange}
+        />
+      </FormCard>
+    </>
   )
 }
 

@@ -1,5 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import Alert from '@mui/material/Alert'
+import Box from '@mui/material/Box'
+import ErrorAlert from '../../components/ErrorAlert'
+import PageHeader from '../../components/PageHeader'
+import PeriodFilter from '../../components/PeriodFilter'
+import AvailableCourseTable from '../../components/enroll/AvailableCourseTable'
+import EnrollmentSummaryBar from '../../components/enroll/EnrollmentSummaryBar'
 import academicPeriodService from '../../services/academicPeriod.service'
 import enrollmentService from '../../services/enrollment.service'
 
@@ -9,6 +16,8 @@ function EnrollCourses() {
   const [academicPeriodId, setAcademicPeriodId] = useState('')
   const [available, setAvailable] = useState([])
   const [selected, setSelected] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -19,9 +28,14 @@ function EnrollCourses() {
         setPeriods(openPeriods)
         if (openPeriods.length > 0) {
           setAcademicPeriodId(String(openPeriods[0].academicPeriodId))
+        } else {
+          setLoading(false)
         }
       })
-      .catch((err) => setError(err.message))
+      .catch((err) => {
+        setError(err.message)
+        setLoading(false)
+      })
   }, [])
 
   useEffect(() => {
@@ -30,80 +44,59 @@ function EnrollCourses() {
       .getMyAvailable(academicPeriodId)
       .then((response) => setAvailable(response.data))
       .catch((err) => setError(err.message))
+      .finally(() => setLoading(false))
   }, [academicPeriodId])
 
-  const handlePeriodChange = (event) => {
-    setAcademicPeriodId(event.target.value)
+  const handlePeriodChange = (value) => {
+    setLoading(true)
     setSelected([])
+    setAcademicPeriodId(value)
   }
 
   const toggleCourse = (courseId) => {
     setSelected(selected.includes(courseId) ? selected.filter((item) => item !== courseId) : [...selected, courseId])
   }
 
-  const handleSubmit = (event) => {
-    event.preventDefault()
+  const handleSubmit = () => {
     setError('')
+    setSaving(true)
     enrollmentService
       .create({ academicPeriodId: Number(academicPeriodId), courseIds: selected })
       .then(() => navigate('/student/enrollments'))
-      .catch((err) => setError(err.message))
+      .catch((err) => {
+        setError(err.message)
+        setSaving(false)
+      })
   }
 
+  const hasOpenPeriods = periods.length > 0
+
   return (
-    <div>
-      <h1>Enroll courses</h1>
-      {error && <p>{error}</p>}
-      <label>
-        Academic period
-        <select value={academicPeriodId} onChange={handlePeriodChange}>
-          {periods.map((period) => (
-            <option key={period.academicPeriodId} value={period.academicPeriodId}>
-              {`${period.academicYear}-${period.academicSemester}`}
-            </option>
-          ))}
-        </select>
-      </label>
-      <form onSubmit={handleSubmit}>
-        <table>
-          <thead>
-            <tr>
-              <th />
-              <th>Semester</th>
-              <th>Code</th>
-              <th>Course</th>
-              <th>Teacher</th>
-              <th>Schedule</th>
-              <th>Available seats</th>
-            </tr>
-          </thead>
-          <tbody>
-            {available.map((course) => (
-              <tr key={course.courseId}>
-                <td>
-                  <input
-                    type="checkbox"
-                    checked={selected.includes(course.courseId)}
-                    onChange={() => toggleCourse(course.courseId)}
-                    disabled={course.availableSeats === 0}
-                  />
-                </td>
-                <td>{course.semester}</td>
-                <td>{course.courseCode}</td>
-                <td>{course.courseName}</td>
-                <td>{course.teacherFullname}</td>
-                <td>{course.scheduleBlocks.join(', ')}</td>
-                <td>{`${course.availableSeats} / ${course.sectionCapacity}`}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <p>{selected.length} selected (between 3 and 6)</p>
-        <button type="submit" disabled={selected.length === 0}>
-          Enroll
-        </button>
-      </form>
-    </div>
+    <>
+      <PageHeader title="Enroll courses" subtitle="Choose an open period and pick the courses you will take." />
+      <ErrorAlert message={error} onClose={() => setError('')} />
+      {!loading && !hasOpenPeriods ? (
+        <Alert severity="info">There are no open academic periods right now.</Alert>
+      ) : (
+        <>
+          <Box sx={{ mb: 2 }}>
+            <PeriodFilter
+              periods={periods}
+              value={academicPeriodId}
+              onChange={handlePeriodChange}
+              allLabel={null}
+            />
+          </Box>
+          <AvailableCourseTable
+            courses={available}
+            selected={selected}
+            loading={loading}
+            onToggle={toggleCourse}
+          />
+          <EnrollmentSummaryBar count={selected.length} saving={saving} onSubmit={handleSubmit} />
+        </>
+      )}
+    </>
   )
 }
 

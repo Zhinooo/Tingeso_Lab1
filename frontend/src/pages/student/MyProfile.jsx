@@ -1,18 +1,26 @@
 import { useEffect, useState } from 'react'
+import LinearProgress from '@mui/material/LinearProgress'
+import ErrorAlert from '../../components/ErrorAlert'
+import PageHeader from '../../components/PageHeader'
+import ProfileSummary from '../../components/profile/ProfileSummary'
+import StudyplanOverview from '../../components/profile/StudyplanOverview'
+import careerService from '../../services/career.service'
 import courseService from '../../services/course.service'
 import studentService from '../../services/student.service'
 import studyplanService from '../../services/studyplan.service'
 
 function MyProfile() {
   const [student, setStudent] = useState(null)
+  const [careerName, setCareerName] = useState('')
   const [courses, setCourses] = useState([])
   const [error, setError] = useState('')
 
   useEffect(() => {
-    Promise.all([studentService.getMine(), studyplanService.getAll()])
-      .then(([studentResponse, studyplansResponse]) => {
+    Promise.all([studentService.getMine(), studyplanService.getAll(), careerService.getAll()])
+      .then(([studentResponse, studyplansResponse, careersResponse]) => {
         const me = studentResponse.data
         setStudent(me)
+        setCareerName(careersResponse.data.find((career) => career.careerCode === me.careerCode)?.careerName)
         const studyplan = studyplansResponse.data.find(
           (item) => item.careerCode === me.careerCode && item.studyplanIdentifier === me.studyplanIdentifier,
         )
@@ -23,45 +31,17 @@ function MyProfile() {
   }, [])
 
   return (
-    <div>
-      <h1>My profile</h1>
-      {error && <p>{error}</p>}
+    <>
+      <PageHeader title="My profile" />
+      <ErrorAlert message={error} />
+      {!student && !error && <LinearProgress />}
       {student && (
-        <ul>
-          <li>RUN: {student.studentRun}</li>
-          <li>Full name: {student.studentFullname}</li>
-          <li>Email: {student.studentEmail}</li>
-          <li>Career: {student.careerCode}</li>
-          <li>Study plan: {student.studyplanIdentifier}</li>
-          <li>Status: {student.studentStatus}</li>
-        </ul>
+        <>
+          <ProfileSummary student={student} careerName={careerName} />
+          <StudyplanOverview courses={courses} />
+        </>
       )}
-      <h2>Study plan</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Semester</th>
-            <th>Code</th>
-            <th>Course</th>
-            <th>TEL</th>
-            <th>SCT</th>
-            <th>Prerequisites</th>
-          </tr>
-        </thead>
-        <tbody>
-          {courses.map((course) => (
-            <tr key={course.courseId}>
-              <td>{course.semester}</td>
-              <td>{course.courseCode}</td>
-              <td>{course.courseName}</td>
-              <td>{`${course.theoryHours}-${course.exerciseHours}-${course.labHours}`}</td>
-              <td>{course.sct}</td>
-              <td>{course.prerequisiteCodes.join(', ')}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    </>
   )
 }
 

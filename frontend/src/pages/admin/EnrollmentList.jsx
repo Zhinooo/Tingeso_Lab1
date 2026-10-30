@@ -1,11 +1,19 @@
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
+import Box from '@mui/material/Box'
+import ErrorAlert from '../../components/ErrorAlert'
+import PageHeader from '../../components/PageHeader'
+import PeriodFilter from '../../components/PeriodFilter'
+import EnrollmentTable from '../../components/enrollments/EnrollmentTable'
 import academicPeriodService from '../../services/academicPeriod.service'
 import enrollmentService from '../../services/enrollment.service'
 
 function EnrollmentList() {
-  const [academicPeriodId, setAcademicPeriodId] = useState('')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const academicPeriodId = searchParams.get('academicPeriodId') ?? ''
   const [periods, setPeriods] = useState([])
   const [enrollments, setEnrollments] = useState([])
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -19,51 +27,26 @@ function EnrollmentList() {
     const request = academicPeriodId
       ? enrollmentService.getByAcademicPeriod(academicPeriodId)
       : enrollmentService.getAll()
-    request.then((response) => setEnrollments(response.data)).catch((err) => setError(err.message))
+    request
+      .then((response) => setEnrollments(response.data))
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false))
   }, [academicPeriodId])
 
+  const handlePeriodChange = (value) => {
+    setLoading(true)
+    setSearchParams(value ? { academicPeriodId: value } : {})
+  }
+
   return (
-    <div>
-      <h1>Enrollments</h1>
-      {error && <p>{error}</p>}
-      <label>
-        Academic period
-        <select value={academicPeriodId} onChange={(event) => setAcademicPeriodId(event.target.value)}>
-          <option value="">All</option>
-          {periods.map((period) => (
-            <option key={period.academicPeriodId} value={period.academicPeriodId}>
-              {`${period.academicYear}-${period.academicSemester}`}
-            </option>
-          ))}
-        </select>
-      </label>
-      <table>
-        <thead>
-          <tr>
-            <th>Student RUN</th>
-            <th>Period</th>
-            <th>Code</th>
-            <th>Course</th>
-            <th>Date</th>
-            <th>Final grade</th>
-            <th>Result</th>
-          </tr>
-        </thead>
-        <tbody>
-          {enrollments.map((enrollment) => (
-            <tr key={enrollment.enrollmentId}>
-              <td>{enrollment.studentRun}</td>
-              <td>{`${enrollment.academicYear}-${enrollment.academicSemester}`}</td>
-              <td>{enrollment.courseCode}</td>
-              <td>{enrollment.courseName}</td>
-              <td>{enrollment.enrollmentDate}</td>
-              <td>{enrollment.finalGrade}</td>
-              <td>{enrollment.result}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <>
+      <PageHeader title="Enrollments" subtitle="Read-only view of course enrollments and final grades." />
+      <Box sx={{ mb: 2 }}>
+        <PeriodFilter periods={periods} value={academicPeriodId} onChange={handlePeriodChange} />
+      </Box>
+      <ErrorAlert message={error} onClose={() => setError('')} />
+      <EnrollmentTable enrollments={enrollments} loading={loading} />
+    </>
   )
 }
 

@@ -1,14 +1,20 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
+import ErrorAlert from '../../components/ErrorAlert'
+import FormCard from '../../components/FormCard'
+import PageHeader from '../../components/PageHeader'
+import PeriodFormFields from '../../components/periods/PeriodFormFields'
 import academicPeriodService from '../../services/academicPeriod.service'
+import { formatPeriod } from '../../utils/periods'
 
-const emptyForm = { academicYear: '', academicSemester: '' }
+const emptyForm = { academicYear: new Date().getFullYear(), academicSemester: 1 }
 
 function AddEditAcademicPeriod() {
   const { id } = useParams()
   const navigate = useNavigate()
   const [form, setForm] = useState(emptyForm)
   const [error, setError] = useState('')
+  const [saving, setSaving] = useState(false)
   const isEdit = Boolean(id)
 
   useEffect(() => {
@@ -30,35 +36,36 @@ function AddEditAcademicPeriod() {
   const handleSubmit = (event) => {
     event.preventDefault()
     setError('')
+    setSaving(true)
     const data = {
       academicYear: Number(form.academicYear),
       academicSemester: Number(form.academicSemester),
     }
     const request = isEdit ? academicPeriodService.update(id, data) : academicPeriodService.create(data)
-    request.then(() => navigate('/admin/academic-periods')).catch((err) => setError(err.message))
+    request
+      .then(() => navigate('/admin/academic-periods'))
+      .catch((err) => {
+        setError(err.message)
+        setSaving(false)
+      })
   }
 
   return (
-    <div>
-      <h1>{isEdit ? 'Edit academic period' : 'New academic period'}</h1>
-      {error && <p>{error}</p>}
-      <form onSubmit={handleSubmit}>
-        <label>
-          Year
-          <input type="number" name="academicYear" value={form.academicYear} onChange={handleChange} />
-        </label>
-        <label>
-          Semester
-          <select name="academicSemester" value={form.academicSemester} onChange={handleChange}>
-            <option value="">Select</option>
-            <option value="1">1</option>
-            <option value="2">2</option>
-          </select>
-        </label>
-        <button type="submit">Save</button>
-        <Link to="/admin/academic-periods">Cancel</Link>
-      </form>
-    </div>
+    <>
+      <PageHeader
+        title={isEdit ? 'Edit academic period' : 'New academic period'}
+        backTo="/admin/academic-periods"
+      />
+      <ErrorAlert message={error} />
+      <FormCard
+        description={`Period: ${formatPeriod(form)}`}
+        onSubmit={handleSubmit}
+        cancelTo="/admin/academic-periods"
+        saving={saving}
+      >
+        <PeriodFormFields form={form} onChange={handleChange} />
+      </FormCard>
+    </>
   )
 }
 

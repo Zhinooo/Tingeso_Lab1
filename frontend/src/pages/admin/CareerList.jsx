@@ -1,16 +1,23 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import ConfirmDialog from '../../components/ConfirmDialog'
+import ErrorAlert from '../../components/ErrorAlert'
+import NewButton from '../../components/NewButton'
+import PageHeader from '../../components/PageHeader'
+import CareerTable from '../../components/careers/CareerTable'
 import careerService from '../../services/career.service'
 
 function CareerList() {
   const [careers, setCareers] = useState([])
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [toDelete, setToDelete] = useState(null)
 
   useEffect(() => {
     careerService
       .getAll()
       .then((response) => setCareers(response.data))
       .catch((err) => setError(err.message))
+      .finally(() => setLoading(false))
   }, [])
 
   const handleToggleStatus = (career) => {
@@ -26,8 +33,9 @@ function CareerList() {
       .catch((err) => setError(err.message))
   }
 
-  const handleDelete = (career) => {
-    if (!window.confirm(`Delete career ${career.careerName}?`)) return
+  const handleDelete = () => {
+    const career = toDelete
+    setToDelete(null)
     setError('')
     careerService
       .remove(career.careerId)
@@ -36,39 +44,27 @@ function CareerList() {
   }
 
   return (
-    <div>
-      <h1>Careers</h1>
-      {error && <p>{error}</p>}
-      <Link to="/admin/careers/new">New career</Link>
-      <table>
-        <thead>
-          <tr>
-            <th>Code</th>
-            <th>Name</th>
-            <th>Description</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {careers.map((career) => (
-            <tr key={career.careerId}>
-              <td>{career.careerCode}</td>
-              <td>{career.careerName}</td>
-              <td>{career.careerDescription}</td>
-              <td>{career.careerStatus}</td>
-              <td>
-                <Link to={`/admin/careers/${career.careerId}/edit`}>Edit</Link>
-                <button onClick={() => handleToggleStatus(career)}>
-                  {career.careerStatus === 'ACTIVE' ? 'Deactivate' : 'Activate'}
-                </button>
-                <button onClick={() => handleDelete(career)}>Delete</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <>
+      <PageHeader
+        title="Careers"
+        subtitle="Technical programs offered by the institute."
+        action={<NewButton to="/admin/careers/new">New career</NewButton>}
+      />
+      <ErrorAlert message={error} onClose={() => setError('')} />
+      <CareerTable
+        careers={careers}
+        loading={loading}
+        onToggleStatus={handleToggleStatus}
+        onDelete={setToDelete}
+      />
+      <ConfirmDialog
+        open={Boolean(toDelete)}
+        title="Delete career?"
+        message={toDelete && `"${toDelete.careerName}" will be permanently deleted.`}
+        onConfirm={handleDelete}
+        onClose={() => setToDelete(null)}
+      />
+    </>
   )
 }
 

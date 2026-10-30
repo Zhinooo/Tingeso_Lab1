@@ -1,34 +1,46 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import ConfirmDialog from '../../components/ConfirmDialog'
+import ErrorAlert from '../../components/ErrorAlert'
+import NewButton from '../../components/NewButton'
+import PageHeader from '../../components/PageHeader'
+import PeriodTable from '../../components/periods/PeriodTable'
 import academicPeriodService from '../../services/academicPeriod.service'
+import { formatPeriod } from '../../utils/periods'
 
 function AcademicPeriodList() {
   const [periods, setPeriods] = useState([])
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [closeError, setCloseError] = useState('')
+  const [toClose, setToClose] = useState(null)
+  const [toDelete, setToDelete] = useState(null)
 
   useEffect(() => {
     academicPeriodService
       .getAll()
       .then((response) => setPeriods(response.data))
       .catch((err) => setError(err.message))
+      .finally(() => setLoading(false))
   }, [])
 
-  const handleClose = (period) => {
-    const name = `${period.academicYear}-${period.academicSemester}`
-    if (!window.confirm(`Close academic period ${name}? This cannot be undone.`)) return
-    setError('')
+  const replacePeriod = (updated) =>
+    setPeriods((current) =>
+      current.map((item) => (item.academicPeriodId === updated.academicPeriodId ? updated : item)),
+    )
+
+  const handleClosePeriod = () => {
+    const period = toClose
+    setToClose(null)
+    setCloseError('')
     academicPeriodService
       .close(period.academicPeriodId)
-      .then((response) =>
-        setPeriods((current) =>
-          current.map((item) => (item.academicPeriodId === period.academicPeriodId ? response.data : item)),
-        ),
-      )
-      .catch((err) => setError(err.message))
+      .then((response) => replacePeriod(response.data))
+      .catch((err) => setCloseError(err.message))
   }
 
-  const handleDelete = (period) => {
-    if (!window.confirm(`Delete academic period ${period.academicYear}-${period.academicSemester}?`)) return
+  const handleDelete = () => {
+    const period = toDelete
+    setToDelete(null)
     setError('')
     academicPeriodService
       .remove(period.academicPeriodId)
@@ -39,36 +51,36 @@ function AcademicPeriodList() {
   }
 
   return (
-    <div>
-      <h1>Academic periods</h1>
-      {error && <p>{error}</p>}
-      <Link to="/admin/academic-periods/new">New academic period</Link>
-      <table>
-        <thead>
-          <tr>
-            <th>Period</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {periods.map((period) => (
-            <tr key={period.academicPeriodId}>
-              <td>{`${period.academicYear}-${period.academicSemester}`}</td>
-              <td>{period.academicPeriodStatus}</td>
-              <td>
-                <Link to={`/admin/sections?academicPeriodId=${period.academicPeriodId}`}>Sections</Link>
-                <Link to={`/admin/academic-periods/${period.academicPeriodId}/edit`}>Edit</Link>
-                {period.academicPeriodStatus === 'OPEN' && (
-                  <button onClick={() => handleClose(period)}>Close period</button>
-                )}
-                <button onClick={() => handleDelete(period)}>Delete</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <>
+      <PageHeader
+        title="Academic periods"
+        subtitle="Semesters in which sections are offered."
+        action={<NewButton to="/admin/academic-periods/new">New period</NewButton>}
+      />
+      <ErrorAlert title="Cannot close period" message={closeError} onClose={() => setCloseError('')} />
+      <ErrorAlert message={error} onClose={() => setError('')} />
+      <PeriodTable
+        periods={periods}
+        loading={loading}
+        onClosePeriod={setToClose}
+        onDelete={setToDelete}
+      />
+      <ConfirmDialog
+        open={Boolean(toClose)}
+        title={toClose && `Close period ${formatPeriod(toClose)}?`}
+        message="This action is irreversible. Every enrollment must have its final grade, and student statuses will be updated."
+        confirmLabel="Close period"
+        onConfirm={handleClosePeriod}
+        onClose={() => setToClose(null)}
+      />
+      <ConfirmDialog
+        open={Boolean(toDelete)}
+        title="Delete period?"
+        message={toDelete && `Period ${formatPeriod(toDelete)} will be permanently deleted.`}
+        onConfirm={handleDelete}
+        onClose={() => setToDelete(null)}
+      />
+    </>
   )
 }
 

@@ -1,16 +1,23 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import ConfirmDialog from '../../components/ConfirmDialog'
+import ErrorAlert from '../../components/ErrorAlert'
+import NewButton from '../../components/NewButton'
+import PageHeader from '../../components/PageHeader'
+import StudyplanTable from '../../components/studyplans/StudyplanTable'
 import studyplanService from '../../services/studyplan.service'
 
 function StudyplanList() {
   const [studyplans, setStudyplans] = useState([])
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [toDelete, setToDelete] = useState(null)
 
   useEffect(() => {
     studyplanService
       .getAll()
       .then((response) => setStudyplans(response.data))
       .catch((err) => setError(err.message))
+      .finally(() => setLoading(false))
   }, [])
 
   const handleToggleStatus = (studyplan) => {
@@ -23,8 +30,9 @@ function StudyplanList() {
       .catch((err) => setError(err.message))
   }
 
-  const handleDelete = (studyplan) => {
-    if (!window.confirm(`Delete study plan ${studyplan.studyplanIdentifier}?`)) return
+  const handleDelete = () => {
+    const studyplan = toDelete
+    setToDelete(null)
     setError('')
     studyplanService
       .remove(studyplan.studyplanId)
@@ -35,38 +43,27 @@ function StudyplanList() {
   }
 
   return (
-    <div>
-      <h1>Study plans</h1>
-      {error && <p>{error}</p>}
-      <Link to="/admin/studyplans/new">New study plan</Link>
-      <table>
-        <thead>
-          <tr>
-            <th>Identifier</th>
-            <th>Career</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {studyplans.map((studyplan) => (
-            <tr key={studyplan.studyplanId}>
-              <td>{studyplan.studyplanIdentifier}</td>
-              <td>{studyplan.careerCode}</td>
-              <td>{studyplan.studyplanStatus}</td>
-              <td>
-                <Link to={`/admin/courses?studyplanId=${studyplan.studyplanId}`}>Courses</Link>
-                <Link to={`/admin/studyplans/${studyplan.studyplanId}/edit`}>Edit</Link>
-                <button onClick={() => handleToggleStatus(studyplan)}>
-                  {studyplan.studyplanStatus === 'CURRENT' ? 'Set not current' : 'Set current'}
-                </button>
-                <button onClick={() => handleDelete(studyplan)}>Delete</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <>
+      <PageHeader
+        title="Study plans"
+        subtitle="Each career can have several plans; only one is current."
+        action={<NewButton to="/admin/studyplans/new">New study plan</NewButton>}
+      />
+      <ErrorAlert message={error} onClose={() => setError('')} />
+      <StudyplanTable
+        studyplans={studyplans}
+        loading={loading}
+        onToggleStatus={handleToggleStatus}
+        onDelete={setToDelete}
+      />
+      <ConfirmDialog
+        open={Boolean(toDelete)}
+        title="Delete study plan?"
+        message={toDelete && `"${toDelete.studyplanIdentifier}" will be permanently deleted.`}
+        onConfirm={handleDelete}
+        onClose={() => setToDelete(null)}
+      />
+    </>
   )
 }
 

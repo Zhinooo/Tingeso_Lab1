@@ -1,20 +1,28 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import ConfirmDialog from '../../components/ConfirmDialog'
+import ErrorAlert from '../../components/ErrorAlert'
+import NewButton from '../../components/NewButton'
+import PageHeader from '../../components/PageHeader'
+import MyEnrollmentTable from '../../components/enrollments/MyEnrollmentTable'
 import enrollmentService from '../../services/enrollment.service'
 
 function MyEnrollments() {
   const [enrollments, setEnrollments] = useState([])
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [toCancel, setToCancel] = useState(null)
 
   useEffect(() => {
     enrollmentService
       .getMine()
       .then((response) => setEnrollments(response.data))
       .catch((err) => setError(err.message))
+      .finally(() => setLoading(false))
   }, [])
 
-  const handleCancel = (enrollment) => {
-    if (!window.confirm(`Cancel enrollment in ${enrollment.courseName}?`)) return
+  const handleCancel = () => {
+    const enrollment = toCancel
+    setToCancel(null)
     setError('')
     enrollmentService
       .cancel(enrollment.enrollmentId)
@@ -25,39 +33,19 @@ function MyEnrollments() {
   }
 
   return (
-    <div>
-      <h1>My enrollments</h1>
-      {error && <p>{error}</p>}
-      <Link to="/student/enroll">Enroll courses</Link>
-      <table>
-        <thead>
-          <tr>
-            <th>Period</th>
-            <th>Code</th>
-            <th>Course</th>
-            <th>Date</th>
-            <th>Final grade</th>
-            <th>Result</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {enrollments.map((enrollment) => (
-            <tr key={enrollment.enrollmentId}>
-              <td>{`${enrollment.academicYear}-${enrollment.academicSemester}`}</td>
-              <td>{enrollment.courseCode}</td>
-              <td>{enrollment.courseName}</td>
-              <td>{enrollment.enrollmentDate}</td>
-              <td>{enrollment.finalGrade}</td>
-              <td>{enrollment.result}</td>
-              <td>
-                <button onClick={() => handleCancel(enrollment)}>Cancel</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <>
+      <PageHeader title="My enrollments" action={<NewButton to="/student/enroll">Enroll courses</NewButton>} />
+      <ErrorAlert message={error} onClose={() => setError('')} />
+      <MyEnrollmentTable enrollments={enrollments} loading={loading} onCancel={setToCancel} />
+      <ConfirmDialog
+        open={Boolean(toCancel)}
+        title="Cancel enrollment?"
+        message={toCancel && `You will be removed from ${toCancel.courseCode} · ${toCancel.courseName}.`}
+        confirmLabel="Cancel enrollment"
+        onConfirm={handleCancel}
+        onClose={() => setToCancel(null)}
+      />
+    </>
   )
 }
 

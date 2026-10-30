@@ -1,18 +1,23 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import ConfirmDialog from '../../components/ConfirmDialog'
+import ErrorAlert from '../../components/ErrorAlert'
+import NewButton from '../../components/NewButton'
+import PageHeader from '../../components/PageHeader'
+import StudentTable from '../../components/students/StudentTable'
 import studentService from '../../services/student.service'
-
-const MANUAL_STATUSES = ['REGULAR', 'DEFERRED', 'TEMPORARY_WITHDRAWAL']
 
 function StudentList() {
   const [students, setStudents] = useState([])
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [toDelete, setToDelete] = useState(null)
 
   useEffect(() => {
     studentService
       .getAll()
       .then((response) => setStudents(response.data))
       .catch((err) => setError(err.message))
+      .finally(() => setLoading(false))
   }, [])
 
   const handleStatusChange = (student, newStatus) => {
@@ -27,8 +32,9 @@ function StudentList() {
       .catch((err) => setError(err.message))
   }
 
-  const handleDelete = (student) => {
-    if (!window.confirm(`Delete student ${student.studentFullname}?`)) return
+  const handleDelete = () => {
+    const student = toDelete
+    setToDelete(null)
     setError('')
     studentService
       .remove(student.studentId)
@@ -37,56 +43,27 @@ function StudentList() {
   }
 
   return (
-    <div>
-      <h1>Students</h1>
-      {error && <p>{error}</p>}
-      <Link to="/admin/students/new">New student</Link>
-      <table>
-        <thead>
-          <tr>
-            <th>RUN</th>
-            <th>Full name</th>
-            <th>Email</th>
-            <th>Career</th>
-            <th>Study plan</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {students.map((student) => (
-            <tr key={student.studentId}>
-              <td>{student.studentRun}</td>
-              <td>{student.studentFullname}</td>
-              <td>{student.studentEmail}</td>
-              <td>{student.careerCode}</td>
-              <td>{student.studyplanIdentifier}</td>
-              <td>
-                {MANUAL_STATUSES.includes(student.studentStatus) ? (
-                  <select
-                    value={student.studentStatus}
-                    onChange={(event) => handleStatusChange(student, event.target.value)}
-                  >
-                    {MANUAL_STATUSES.map((status) => (
-                      <option key={status} value={status}>
-                        {status}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  student.studentStatus
-                )}
-              </td>
-              <td>
-                <Link to={`/admin/students/${student.studentId}/history`}>History</Link>
-                <Link to={`/admin/students/${student.studentId}/edit`}>Edit</Link>
-                <button onClick={() => handleDelete(student)}>Delete</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <>
+      <PageHeader
+        title="Students"
+        subtitle="Student records, career and academic status."
+        action={<NewButton to="/admin/students/new">New student</NewButton>}
+      />
+      <ErrorAlert message={error} onClose={() => setError('')} />
+      <StudentTable
+        students={students}
+        loading={loading}
+        onStatusChange={handleStatusChange}
+        onDelete={setToDelete}
+      />
+      <ConfirmDialog
+        open={Boolean(toDelete)}
+        title="Delete student?"
+        message={toDelete && `${toDelete.studentFullname} will be permanently deleted, including their login account.`}
+        onConfirm={handleDelete}
+        onClose={() => setToDelete(null)}
+      />
+    </>
   )
 }
 

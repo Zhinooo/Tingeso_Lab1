@@ -5,6 +5,7 @@ import TableRow from '@mui/material/TableRow'
 import DataTable from './DataTable'
 import Stat from './Stat'
 import StatusChip from './StatusChip'
+import { formatPeriod } from '../utils/periods'
 
 const COLUMNS = [
   { label: 'Period' },
@@ -53,7 +54,7 @@ function HistoryView({ student, history, loading }) {
       >
         {history.map((enrollment) => (
           <TableRow key={enrollment.enrollmentId} hover>
-            <TableCell>{`${enrollment.academicYear}-${enrollment.academicSemester}`}</TableCell>
+            <TableCell>{formatPeriod(enrollment)}</TableCell>
             <TableCell sx={{ fontFamily: 'monospace', fontWeight: 700 }}>{enrollment.courseCode}</TableCell>
             <TableCell>{enrollment.courseName}</TableCell>
             <TableCell

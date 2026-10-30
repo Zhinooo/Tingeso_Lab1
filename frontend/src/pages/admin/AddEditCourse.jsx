@@ -1,17 +1,24 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import Divider from '@mui/material/Divider'
+import ErrorAlert from '../../components/ErrorAlert'
+import FormCard from '../../components/FormCard'
+import PageHeader from '../../components/PageHeader'
+import CourseFormFields from '../../components/courses/CourseFormFields'
+import CourseWorkloadFields from '../../components/courses/CourseWorkloadFields'
+import PrerequisitePicker from '../../components/courses/PrerequisitePicker'
 import courseService from '../../services/course.service'
 import studyplanService from '../../services/studyplan.service'
 
 const emptyForm = {
+  studyplanId: '',
+  semester: 1,
   courseCode: '',
   courseName: '',
-  semester: '',
-  theoryHours: '',
-  exerciseHours: '',
-  labHours: '',
-  sct: '',
-  studyplanId: '',
+  theoryHours: 0,
+  exerciseHours: 0,
+  labHours: 0,
+  sct: 1,
   prerequisiteCodes: [],
 }
 
@@ -23,30 +30,24 @@ function AddEditCourse() {
   const [studyplans, setStudyplans] = useState([])
   const [planCourses, setPlanCourses] = useState([])
   const [error, setError] = useState('')
+  const [saving, setSaving] = useState(false)
   const isEdit = Boolean(id)
 
   useEffect(() => {
-    studyplanService
-      .getAll()
-      .then((response) => setStudyplans(response.data))
-      .catch((err) => setError(err.message))
-  }, [])
-
-  useEffect(() => {
-    if (!id) return
-    courseService
-      .get(id)
-      .then((response) => {
-        const course = response.data
+    Promise.all([studyplanService.getAll(), id ? courseService.get(id) : null])
+      .then(([studyplansResponse, courseResponse]) => {
+        setStudyplans(studyplansResponse.data)
+        if (!courseResponse) return
+        const course = courseResponse.data
         setForm({
+          studyplanId: String(course.studyplanId),
+          semester: course.semester,
           courseCode: course.courseCode,
           courseName: course.courseName,
-          semester: course.semester,
           theoryHours: course.theoryHours,
           exerciseHours: course.exerciseHours,
           labHours: course.labHours,
           sct: course.sct,
-          studyplanId: course.studyplanId,
           prerequisiteCodes: course.prerequisiteCodes,
         })
       })
@@ -61,16 +62,24 @@ function AddEditCourse() {
       .catch((err) => setError(err.message))
   }, [form.studyplanId])
 
-  const prerequisiteOptions = planCourses.filter(
-    (course) =>
-      course.studyplanId === Number(form.studyplanId) &&
-      course.semester < Number(form.semester) &&
-      course.courseCode !== form.courseCode,
-  )
+  const isValidPrerequisite = (course, semester) =>
+    course.semester < Number(semester) && course.courseId !== Number(id)
+
+  const prerequisiteOptions = planCourses.filter((course) => isValidPrerequisite(course, form.semester))
+  const listUrl = form.studyplanId ? `/admin/courses?studyplanId=${form.studyplanId}` : '/admin/courses'
 
   const handleChange = (event) => {
     const { name, value } = event.target
-    setForm({ ...form, [name]: value })
+    const next = { ...form, [name]: value }
+    if (name === 'studyplanId') {
+      next.prerequisiteCodes = []
+    }
+    if (name === 'semester') {
+      next.prerequisiteCodes = form.prerequisiteCodes.filter((code) =>
+        planCourses.some((course) => course.courseCode === code && isValidPrerequisite(course, value)),
+      )
+    }
+    setForm(next)
   }
 
   const togglePrerequisite = (code) => {
@@ -84,89 +93,42 @@ function AddEditCourse() {
   const handleSubmit = (event) => {
     event.preventDefault()
     setError('')
+    setSaving(true)
     const data = {
       ...form,
+      studyplanId: Number(form.studyplanId),
       semester: Number(form.semester),
       theoryHours: Number(form.theoryHours),
       exerciseHours: Number(form.exerciseHours),
       labHours: Number(form.labHours),
       sct: Number(form.sct),
-      studyplanId: Number(form.studyplanId),
     }
     const request = isEdit ? courseService.update(id, data) : courseService.create(data)
     request
-      .then(() => navigate(`/admin/courses?studyplanId=${data.studyplanId}`))
-      .catch((err) => setError(err.message))
+      .then(() => navigate(listUrl))
+      .catch((err) => {
+        setError(err.message)
+        setSaving(false)
+      })
   }
 
   return (
-    <div>
-      <h1>{isEdit ? 'Edit course' : 'New course'}</h1>
-      {error && <p>{error}</p>}
-      <form onSubmit={handleSubmit}>
-        <label>
-          Study plan
-          <select name="studyplanId" value={form.studyplanId} onChange={handleChange} disabled={isEdit}>
-            <option value="">Select a study plan</option>
-            {studyplans.map((studyplan) => (
-              <option key={studyplan.studyplanId} value={studyplan.studyplanId}>
-                {studyplan.careerCode} - {studyplan.studyplanIdentifier}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          Code
-          <input name="courseCode" value={form.courseCode} onChange={handleChange} />
-        </label>
-        <label>
-          Name
-          <input name="courseName" value={form.courseName} onChange={handleChange} />
-        </label>
-        <label>
-          Semester
-          <select name="semester" value={form.semester} onChange={handleChange}>
-            <option value="">Select</option>
-            {[1, 2, 3, 4].map((semester) => (
-              <option key={semester} value={semester}>
-                {semester}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          Theory hours
-          <input type="number" min="0" name="theoryHours" value={form.theoryHours} onChange={handleChange} />
-        </label>
-        <label>
-          Exercise hours
-          <input type="number" min="0" name="exerciseHours" value={form.exerciseHours} onChange={handleChange} />
-        </label>
-        <label>
-          Lab hours
-          <input type="number" min="0" name="labHours" value={form.labHours} onChange={handleChange} />
-        </label>
-        <label>
-          SCT
-          <input type="number" min="1" max="7" name="sct" value={form.sct} onChange={handleChange} />
-        </label>
-        <fieldset>
-          <legend>Prerequisites (max 3, from earlier semesters)</legend>
-          {prerequisiteOptions.map((course) => (
-            <label key={course.courseId}>
-              <input
-                type="checkbox"
-                checked={form.prerequisiteCodes.includes(course.courseCode)}
-                onChange={() => togglePrerequisite(course.courseCode)}
-              />
-              {course.courseCode} - {course.courseName}
-            </label>
-          ))}
-        </fieldset>
-        <button type="submit">Save</button>
-        <Link to="/admin/courses">Cancel</Link>
-      </form>
-    </div>
+    <>
+      <PageHeader title={isEdit ? 'Edit course' : 'New course'} backTo={listUrl} />
+      <ErrorAlert message={error} />
+      <FormCard onSubmit={handleSubmit} cancelTo={listUrl} saving={saving}>
+        <CourseFormFields form={form} studyplans={studyplans} isEdit={isEdit} onChange={handleChange} />
+        <Divider sx={{ my: 3 }} />
+        <CourseWorkloadFields form={form} onChange={handleChange} />
+        <Divider sx={{ my: 3 }} />
+        <PrerequisitePicker
+          options={prerequisiteOptions}
+          selected={form.prerequisiteCodes}
+          hasStudyplan={Boolean(form.studyplanId)}
+          onToggle={togglePrerequisite}
+        />
+      </FormCard>
+    </>
   )
 }
 

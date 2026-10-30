@@ -9,6 +9,7 @@ import MenuItem from '@mui/material/MenuItem'
 import Typography from '@mui/material/Typography'
 import LogoutIcon from '@mui/icons-material/Logout'
 import useAuth from '../../auth/useAuth'
+import { getInitials } from '../../utils/names'
 import { ROLE_LABEL } from './navConfig'
 
 function UserMenu() {
@@ -16,13 +17,7 @@ function UserMenu() {
   const [menuAnchor, setMenuAnchor] = useState(null)
 
   const roleLabel = me.roles.map((role) => ROLE_LABEL[role] || role).join(', ')
-  const initials = me.fullName
-    .trim()
-    .split(/\s+/)
-    .map((word) => word[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase()
+  const initials = getInitials(me.fullName)
 
   const handleLogout = () => {
     setMenuAnchor(null)

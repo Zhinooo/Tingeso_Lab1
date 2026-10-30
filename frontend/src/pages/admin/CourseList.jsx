@@ -1,5 +1,13 @@
 import { useEffect, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
+import Stack from '@mui/material/Stack'
+import ConfirmDialog from '../../components/ConfirmDialog'
+import ErrorAlert from '../../components/ErrorAlert'
+import NewButton from '../../components/NewButton'
+import PageHeader from '../../components/PageHeader'
+import StudyplanFilter from '../../components/StudyplanFilter'
+import CourseTable from '../../components/courses/CourseTable'
+import SemesterLegend from '../../components/courses/SemesterLegend'
 import courseService from '../../services/course.service'
 import studyplanService from '../../services/studyplan.service'
 
@@ -8,7 +16,9 @@ function CourseList() {
   const studyplanId = searchParams.get('studyplanId') ?? ''
   const [studyplans, setStudyplans] = useState([])
   const [courses, setCourses] = useState([])
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [toDelete, setToDelete] = useState(null)
 
   useEffect(() => {
     studyplanService
@@ -19,16 +29,20 @@ function CourseList() {
 
   useEffect(() => {
     const request = studyplanId ? courseService.getByStudyplan(studyplanId) : courseService.getAll()
-    request.then((response) => setCourses(response.data)).catch((err) => setError(err.message))
+    request
+      .then((response) => setCourses(response.data))
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false))
   }, [studyplanId])
 
-  const handleStudyplanChange = (event) => {
-    const value = event.target.value
+  const handleStudyplanChange = (value) => {
+    setLoading(true)
     setSearchParams(value ? { studyplanId: value } : {})
   }
 
-  const handleDelete = (course) => {
-    if (!window.confirm(`Delete course ${course.courseCode}?`)) return
+  const handleDelete = () => {
+    const course = toDelete
+    setToDelete(null)
     setError('')
     courseService
       .remove(course.courseId)
@@ -36,56 +50,34 @@ function CourseList() {
       .catch((err) => setError(err.message))
   }
 
+  const newCourseUrl = studyplanId ? `/admin/courses/new?studyplanId=${studyplanId}` : '/admin/courses/new'
+
   return (
-    <div>
-      <h1>Courses</h1>
-      {error && <p>{error}</p>}
-      <label>
-        Study plan
-        <select value={studyplanId} onChange={handleStudyplanChange}>
-          <option value="">All</option>
-          {studyplans.map((studyplan) => (
-            <option key={studyplan.studyplanId} value={studyplan.studyplanId}>
-              {studyplan.careerCode} - {studyplan.studyplanIdentifier}
-            </option>
-          ))}
-        </select>
-      </label>
-      <Link to={studyplanId ? `/admin/courses/new?studyplanId=${studyplanId}` : '/admin/courses/new'}>
-        New course
-      </Link>
-      <table>
-        <thead>
-          <tr>
-            <th>Semester</th>
-            <th>Code</th>
-            <th>Name</th>
-            <th>TEL</th>
-            <th>SCT</th>
-            <th>Study plan</th>
-            <th>Prerequisites</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {courses.map((course) => (
-            <tr key={course.courseId}>
-              <td>{course.semester}</td>
-              <td>{course.courseCode}</td>
-              <td>{course.courseName}</td>
-              <td>{`${course.theoryHours}-${course.exerciseHours}-${course.labHours}`}</td>
-              <td>{course.sct}</td>
-              <td>{course.studyplanIdentifier}</td>
-              <td>{course.prerequisiteCodes.join(', ')}</td>
-              <td>
-                <Link to={`/admin/courses/${course.courseId}/edit`}>Edit</Link>
-                <button onClick={() => handleDelete(course)}>Delete</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <>
+      <PageHeader
+        title="Courses"
+        subtitle="Courses by semester, with their weekly hours and prerequisites."
+        action={<NewButton to={newCourseUrl}>New course</NewButton>}
+      />
+      <Stack direction="row" spacing={3} sx={{ mb: 2, alignItems: 'center' }}>
+        <StudyplanFilter studyplans={studyplans} value={studyplanId} onChange={handleStudyplanChange} />
+        <SemesterLegend />
+      </Stack>
+      <ErrorAlert message={error} onClose={() => setError('')} />
+      <CourseTable
+        courses={courses}
+        loading={loading}
+        emptyHint={studyplanId ? 'This study plan has no courses yet.' : 'Create a study plan first, then add its courses.'}
+        onDelete={setToDelete}
+      />
+      <ConfirmDialog
+        open={Boolean(toDelete)}
+        title="Delete course?"
+        message={toDelete && `${toDelete.courseCode} · ${toDelete.courseName} will be permanently deleted.`}
+        onConfirm={handleDelete}
+        onClose={() => setToDelete(null)}
+      />
+    </>
   )
 }
 

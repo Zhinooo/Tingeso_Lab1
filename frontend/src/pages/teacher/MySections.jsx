@@ -1,49 +1,53 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import Grid from '@mui/material/Grid'
+import LinearProgress from '@mui/material/LinearProgress'
+import Paper from '@mui/material/Paper'
+import EmptyState from '../../components/EmptyState'
+import ErrorAlert from '../../components/ErrorAlert'
+import PageHeader from '../../components/PageHeader'
+import TeacherSectionCard from '../../components/teaching/TeacherSectionCard'
+import academicPeriodService from '../../services/academicPeriod.service'
 import sectionService from '../../services/section.service'
+import { comparePeriodsDesc } from '../../utils/periods'
 
 function MySections() {
   const [sections, setSections] = useState([])
+  const [openPeriodIds, setOpenPeriodIds] = useState([])
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
   useEffect(() => {
-    sectionService
-      .getMine()
-      .then((response) => setSections(response.data))
+    Promise.all([sectionService.getMine(), academicPeriodService.getAll()])
+      .then(([sectionsResponse, periodsResponse]) => {
+        setSections([...sectionsResponse.data].sort(comparePeriodsDesc))
+        setOpenPeriodIds(
+          periodsResponse.data
+            .filter((period) => period.academicPeriodStatus === 'OPEN')
+            .map((period) => period.academicPeriodId),
+        )
+      })
       .catch((err) => setError(err.message))
+      .finally(() => setLoading(false))
   }, [])
 
   return (
-    <div>
-      <h1>My sections</h1>
-      {error && <p>{error}</p>}
-      <table>
-        <thead>
-          <tr>
-            <th>Period</th>
-            <th>Course</th>
-            <th>Capacity</th>
-            <th>Schedule</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {sections.map((section) => (
-            <tr key={section.sectionId}>
-              <td>{`${section.academicYear}-${section.academicSemester}`}</td>
-              <td>
-                {section.courseCode} - {section.courseName}
-              </td>
-              <td>{section.sectionCapacity}</td>
-              <td>{section.scheduleBlocks.join(', ')}</td>
-              <td>
-                <Link to={`/teacher/sections/${section.sectionId}`}>Students and grades</Link>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <>
+      <PageHeader title="My sections" subtitle="Sections assigned to you. Open one to record final grades." />
+      <ErrorAlert message={error} />
+      {loading && <LinearProgress sx={{ mb: 2 }} />}
+      {!loading && sections.length === 0 && (
+        <Paper>
+          <EmptyState message="No sections assigned yet" />
+        </Paper>
+      )}
+      <Grid container spacing={2}>
+        {sections.map((section) => (
+          <Grid key={section.sectionId} size={4}>
+            <TeacherSectionCard section={section} isOpen={openPeriodIds.includes(section.academicPeriodId)} />
+          </Grid>
+        ))}
+      </Grid>
+    </>
   )
 }
 

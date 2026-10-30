@@ -1,19 +1,38 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
+import Snackbar from '@mui/material/Snackbar'
+import ErrorAlert from '../../components/ErrorAlert'
+import PageHeader from '../../components/PageHeader'
+import GradeTable from '../../components/teaching/GradeTable'
+import academicPeriodService from '../../services/academicPeriod.service'
 import enrollmentService from '../../services/enrollment.service'
 import sectionService from '../../services/section.service'
+import { formatPeriod } from '../../utils/periods'
 
 function SectionGrades() {
   const { id } = useParams()
   const [section, setSection] = useState(null)
+  const [isClosed, setIsClosed] = useState(false)
   const [enrollments, setEnrollments] = useState([])
   const [grades, setGrades] = useState({})
+  const [loading, setLoading] = useState(true)
+  const [savingId, setSavingId] = useState(null)
   const [error, setError] = useState('')
+  const [savedMessage, setSavedMessage] = useState('')
 
   useEffect(() => {
-    Promise.all([sectionService.get(id), enrollmentService.getMySectionEnrollments(id)])
-      .then(([sectionResponse, enrollmentsResponse]) => {
-        setSection(sectionResponse.data)
+    Promise.all([
+      sectionService.get(id),
+      enrollmentService.getMySectionEnrollments(id),
+      academicPeriodService.getAll(),
+    ])
+      .then(([sectionResponse, enrollmentsResponse, periodsResponse]) => {
+        const loadedSection = sectionResponse.data
+        const period = periodsResponse.data.find(
+          (item) => item.academicPeriodId === loadedSection.academicPeriodId,
+        )
+        setSection(loadedSection)
+        setIsClosed(period?.academicPeriodStatus === 'CLOSED')
         setEnrollments(enrollmentsResponse.data)
         setGrades(
           Object.fromEntries(
@@ -22,6 +41,7 @@ function SectionGrades() {
         )
       })
       .catch((err) => setError(err.message))
+      .finally(() => setLoading(false))
   }, [id])
 
   const handleGradeChange = (enrollmentId, value) => {
@@ -30,58 +50,44 @@ function SectionGrades() {
 
   const handleSave = (enrollment) => {
     setError('')
+    setSavingId(enrollment.enrollmentId)
     enrollmentService
       .registerGrade(enrollment.enrollmentId, { finalGrade: Number(grades[enrollment.enrollmentId]) })
-      .then((response) =>
+      .then((response) => {
         setEnrollments((current) =>
           current.map((item) => (item.enrollmentId === enrollment.enrollmentId ? response.data : item)),
-        ),
-      )
+        )
+        setSavedMessage(`Grade saved for ${enrollment.studentRun}`)
+      })
       .catch((err) => setError(err.message))
+      .finally(() => setSavingId(null))
   }
 
+  const title = section ? `${section.courseCode} · ${section.courseName}` : 'Section'
+  const subtitle = section
+    ? `Period ${formatPeriod(section)} · ${enrollments.length} students${isClosed ? ' · Period closed (read only)' : ''}`
+    : undefined
+
   return (
-    <div>
-      <h1>Grades</h1>
-      {error && <p>{error}</p>}
-      {section && (
-        <p>
-          {section.courseCode} - {section.courseName} ({`${section.academicYear}-${section.academicSemester}`})
-        </p>
-      )}
-      <table>
-        <thead>
-          <tr>
-            <th>Student RUN</th>
-            <th>Final grade (1.0 to 7.0)</th>
-            <th>Result</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {enrollments.map((enrollment) => (
-            <tr key={enrollment.enrollmentId}>
-              <td>{enrollment.studentRun}</td>
-              <td>
-                <input
-                  type="number"
-                  min="1"
-                  max="7"
-                  step="0.1"
-                  value={grades[enrollment.enrollmentId] ?? ''}
-                  onChange={(event) => handleGradeChange(enrollment.enrollmentId, event.target.value)}
-                />
-              </td>
-              <td>{enrollment.result}</td>
-              <td>
-                <button onClick={() => handleSave(enrollment)}>Save</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <Link to="/teacher/sections">Back</Link>
-    </div>
+    <>
+      <PageHeader title={title} subtitle={subtitle} backTo="/teacher/sections" />
+      <ErrorAlert message={error} onClose={() => setError('')} />
+      <GradeTable
+        enrollments={enrollments}
+        grades={grades}
+        loading={loading}
+        readOnly={isClosed}
+        savingId={savingId}
+        onChange={handleGradeChange}
+        onSave={handleSave}
+      />
+      <Snackbar
+        open={Boolean(savedMessage)}
+        autoHideDuration={2500}
+        onClose={() => setSavedMessage('')}
+        message={savedMessage}
+      />
+    </>
   )
 }
 

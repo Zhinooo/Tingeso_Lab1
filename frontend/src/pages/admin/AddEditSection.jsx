@@ -1,18 +1,22 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import Divider from '@mui/material/Divider'
+import ErrorAlert from '../../components/ErrorAlert'
+import FormCard from '../../components/FormCard'
+import PageHeader from '../../components/PageHeader'
+import ScheduleGrid from '../../components/sections/ScheduleGrid'
+import SectionFormFields from '../../components/sections/SectionFormFields'
+import { HOURS_PER_BLOCK } from '../../constants/sections'
 import academicPeriodService from '../../services/academicPeriod.service'
 import courseService from '../../services/course.service'
 import sectionService from '../../services/section.service'
 import teacherService from '../../services/teacher.service'
 
-const DAYS = ['L', 'M', 'W', 'J', 'V']
-const MODULES = [1, 2, 3, 4, 5, 6]
-
 const emptyForm = {
-  courseId: '',
   academicPeriodId: '',
+  courseId: '',
   teacherId: '',
-  sectionCapacity: '',
+  sectionCapacity: 30,
   scheduleBlocks: [],
 }
 
@@ -23,32 +27,30 @@ function AddEditSection() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const [form, setForm] = useState({ ...emptyForm, academicPeriodId: searchParams.get('academicPeriodId') ?? '' })
-  const [courses, setCourses] = useState([])
   const [periods, setPeriods] = useState([])
+  const [courses, setCourses] = useState([])
   const [teachers, setTeachers] = useState([])
   const [error, setError] = useState('')
+  const [saving, setSaving] = useState(false)
   const isEdit = Boolean(id)
 
   useEffect(() => {
-    Promise.all([courseService.getAll(), academicPeriodService.getAll(), teacherService.getAll()])
-      .then(([coursesResponse, periodsResponse, teachersResponse]) => {
-        setCourses(coursesResponse.data)
+    Promise.all([
+      academicPeriodService.getAll(),
+      courseService.getAll(),
+      teacherService.getAll(),
+      id ? sectionService.get(id) : null,
+    ])
+      .then(([periodsResponse, coursesResponse, teachersResponse, sectionResponse]) => {
         setPeriods(periodsResponse.data)
+        setCourses(coursesResponse.data)
         setTeachers(teachersResponse.data)
-      })
-      .catch((err) => setError(err.message))
-  }, [])
-
-  useEffect(() => {
-    if (!id) return
-    sectionService
-      .get(id)
-      .then((response) => {
-        const section = response.data
+        if (!sectionResponse) return
+        const section = sectionResponse.data
         setForm({
-          courseId: section.courseId,
-          academicPeriodId: section.academicPeriodId,
-          teacherId: section.teacherId,
+          academicPeriodId: String(section.academicPeriodId),
+          courseId: String(section.courseId),
+          teacherId: String(section.teacherId),
           sectionCapacity: section.sectionCapacity,
           scheduleBlocks: section.scheduleBlocks,
         })
@@ -56,16 +58,20 @@ function AddEditSection() {
       .catch((err) => setError(err.message))
   }, [id])
 
-  const availableTeachers = teachers.filter(
-    (teacher) => teacher.teacherStatus === 'ACTIVE' || teacher.teacherId === Number(form.teacherId),
-  )
   const availablePeriods = periods.filter(
-    (period) => period.academicPeriodStatus === 'OPEN' || period.academicPeriodId === Number(form.academicPeriodId),
+    (period) =>
+      period.academicPeriodStatus === 'OPEN' || String(period.academicPeriodId) === form.academicPeriodId,
   )
-  const selectedCourse = courses.find((course) => course.courseId === Number(form.courseId))
+  const availableTeachers = teachers.filter(
+    (teacher) => teacher.teacherStatus === 'ACTIVE' || String(teacher.teacherId) === form.teacherId,
+  )
+  const selectedCourse = courses.find((course) => String(course.courseId) === form.courseId)
   const requiredBlocks = selectedCourse
-    ? (selectedCourse.theoryHours + selectedCourse.exerciseHours + selectedCourse.labHours) / 2
+    ? (selectedCourse.theoryHours + selectedCourse.exerciseHours + selectedCourse.labHours) / HOURS_PER_BLOCK
     : null
+  const listUrl = form.academicPeriodId
+    ? `/admin/sections?academicPeriodId=${form.academicPeriodId}`
+    : '/admin/sections'
 
   const handleChange = (event) => {
     const { name, value } = event.target
@@ -83,113 +89,44 @@ function AddEditSection() {
   const handleSubmit = (event) => {
     event.preventDefault()
     setError('')
-    const scheduleBlocks = form.scheduleBlocks.map(toScheduleBlock)
+    setSaving(true)
+    const data = {
+      teacherId: Number(form.teacherId),
+      sectionCapacity: Number(form.sectionCapacity),
+      scheduleBlocks: form.scheduleBlocks.map(toScheduleBlock),
+    }
     const request = isEdit
-      ? sectionService.update(id, {
-          teacherId: Number(form.teacherId),
-          sectionCapacity: Number(form.sectionCapacity),
-          scheduleBlocks,
-        })
+      ? sectionService.update(id, data)
       : sectionService.create({
+          ...data,
           courseId: Number(form.courseId),
           academicPeriodId: Number(form.academicPeriodId),
-          teacherId: Number(form.teacherId),
-          sectionCapacity: Number(form.sectionCapacity),
-          scheduleBlocks,
         })
     request
-      .then(() => navigate(`/admin/sections?academicPeriodId=${form.academicPeriodId}`))
-      .catch((err) => setError(err.message))
+      .then(() => navigate(listUrl))
+      .catch((err) => {
+        setError(err.message)
+        setSaving(false)
+      })
   }
 
   return (
-    <div>
-      <h1>{isEdit ? 'Edit section' : 'New section'}</h1>
-      {error && <p>{error}</p>}
-      <form onSubmit={handleSubmit}>
-        <label>
-          Academic period
-          <select name="academicPeriodId" value={form.academicPeriodId} onChange={handleChange} disabled={isEdit}>
-            <option value="">Select a period</option>
-            {availablePeriods.map((period) => (
-              <option key={period.academicPeriodId} value={period.academicPeriodId}>
-                {`${period.academicYear}-${period.academicSemester}`}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          Course
-          <select name="courseId" value={form.courseId} onChange={handleChange} disabled={isEdit}>
-            <option value="">Select a course</option>
-            {courses.map((course) => (
-              <option key={course.courseId} value={course.courseId}>
-                {course.courseCode} - {course.courseName} ({course.studyplanIdentifier})
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          Teacher
-          <select name="teacherId" value={form.teacherId} onChange={handleChange}>
-            <option value="">Select a teacher</option>
-            {availableTeachers.map((teacher) => (
-              <option key={teacher.teacherId} value={teacher.teacherId}>
-                {teacher.teacherFullname}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          Capacity (1 to 60)
-          <input
-            type="number"
-            min="1"
-            max="60"
-            name="sectionCapacity"
-            value={form.sectionCapacity}
-            onChange={handleChange}
-          />
-        </label>
-        <fieldset>
-          <legend>
-            Schedule: {form.scheduleBlocks.length} selected
-            {requiredBlocks !== null && ` of ${requiredBlocks} required`}
-          </legend>
-          <table>
-            <thead>
-              <tr>
-                <th>Module</th>
-                {DAYS.map((day) => (
-                  <th key={day}>{day}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {MODULES.map((module) => (
-                <tr key={module}>
-                  <td>M{module}</td>
-                  {DAYS.map((day) => {
-                    const code = `${day}${module}`
-                    return (
-                      <td key={code}>
-                        <input
-                          type="checkbox"
-                          checked={form.scheduleBlocks.includes(code)}
-                          onChange={() => toggleBlock(code)}
-                        />
-                      </td>
-                    )
-                  })}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </fieldset>
-        <button type="submit">Save</button>
-        <Link to="/admin/sections">Cancel</Link>
-      </form>
-    </div>
+    <>
+      <PageHeader title={isEdit ? 'Edit section' : 'New section'} backTo={listUrl} />
+      <ErrorAlert message={error} />
+      <FormCard onSubmit={handleSubmit} cancelTo={listUrl} saving={saving}>
+        <SectionFormFields
+          form={form}
+          periods={availablePeriods}
+          courses={courses}
+          teachers={availableTeachers}
+          isEdit={isEdit}
+          onChange={handleChange}
+        />
+        <Divider sx={{ my: 3 }} />
+        <ScheduleGrid selected={form.scheduleBlocks} required={requiredBlocks} onToggle={toggleBlock} />
+      </FormCard>
+    </>
   )
 }
 

@@ -1,5 +1,9 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
+import ErrorAlert from '../../components/ErrorAlert'
+import FormCard from '../../components/FormCard'
+import PageHeader from '../../components/PageHeader'
+import CareerFormFields from '../../components/careers/CareerFormFields'
 import careerService from '../../services/career.service'
 
 const emptyForm = { careerCode: '', careerName: '', careerDescription: '' }
@@ -9,6 +13,7 @@ function AddEditCareer() {
   const navigate = useNavigate()
   const [form, setForm] = useState(emptyForm)
   const [error, setError] = useState('')
+  const [saving, setSaving] = useState(false)
   const isEdit = Boolean(id)
 
   useEffect(() => {
@@ -30,31 +35,24 @@ function AddEditCareer() {
   const handleSubmit = (event) => {
     event.preventDefault()
     setError('')
+    setSaving(true)
     const request = isEdit ? careerService.update(id, form) : careerService.create(form)
-    request.then(() => navigate('/admin/careers')).catch((err) => setError(err.message))
+    request
+      .then(() => navigate('/admin/careers'))
+      .catch((err) => {
+        setError(err.message)
+        setSaving(false)
+      })
   }
 
   return (
-    <div>
-      <h1>{isEdit ? 'Edit career' : 'New career'}</h1>
-      {error && <p>{error}</p>}
-      <form onSubmit={handleSubmit}>
-        <label>
-          Code
-          <input name="careerCode" value={form.careerCode} onChange={handleChange} />
-        </label>
-        <label>
-          Name
-          <input name="careerName" value={form.careerName} onChange={handleChange} />
-        </label>
-        <label>
-          Description
-          <textarea name="careerDescription" value={form.careerDescription} onChange={handleChange} />
-        </label>
-        <button type="submit">Save</button>
-        <Link to="/admin/careers">Cancel</Link>
-      </form>
-    </div>
+    <>
+      <PageHeader title={isEdit ? 'Edit career' : 'New career'} backTo="/admin/careers" />
+      <ErrorAlert message={error} />
+      <FormCard onSubmit={handleSubmit} cancelTo="/admin/careers" saving={saving}>
+        <CareerFormFields form={form} onChange={handleChange} />
+      </FormCard>
+    </>
   )
 }
 

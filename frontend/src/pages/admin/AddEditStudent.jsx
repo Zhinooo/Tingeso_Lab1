@@ -1,5 +1,11 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
+import Snackbar from '@mui/material/Snackbar'
+import ErrorAlert from '../../components/ErrorAlert'
+import FormCard from '../../components/FormCard'
+import PageHeader from '../../components/PageHeader'
+import StudentCareerChangeCard from '../../components/students/StudentCareerChangeCard'
+import StudentFormFields from '../../components/students/StudentFormFields'
 import careerService from '../../services/career.service'
 import studentService from '../../services/student.service'
 import studyplanService from '../../services/studyplan.service'
@@ -22,23 +28,19 @@ function AddEditStudent() {
   const [careers, setCareers] = useState([])
   const [studyplans, setStudyplans] = useState([])
   const [error, setError] = useState('')
+  const [careerError, setCareerError] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [savingCareer, setSavingCareer] = useState(false)
+  const [careerChanged, setCareerChanged] = useState(false)
   const isEdit = Boolean(id)
 
   useEffect(() => {
-    Promise.all([careerService.getAll(), studyplanService.getAll()])
-      .then(([careersResponse, studyplansResponse]) => {
+    Promise.all([careerService.getAll(), studyplanService.getAll(), id ? studentService.get(id) : null])
+      .then(([careersResponse, studyplansResponse, studentResponse]) => {
         setCareers(careersResponse.data)
         setStudyplans(studyplansResponse.data)
-      })
-      .catch((err) => setError(err.message))
-  }, [])
-
-  useEffect(() => {
-    if (!id) return
-    studentService
-      .get(id)
-      .then((response) => {
-        const student = response.data
+        if (!studentResponse) return
+        const student = studentResponse.data
         setForm({
           studentRun: student.studentRun,
           studentFullname: student.studentFullname,
@@ -52,7 +54,6 @@ function AddEditStudent() {
   }, [id])
 
   const activeCareers = careers.filter((career) => career.careerStatus === 'ACTIVE')
-  const careerStudyplans = studyplans.filter((studyplan) => studyplan.careerCode === careerForm.careerCode)
 
   const handleChange = (event) => {
     const { name, value } = event.target
@@ -71,96 +72,65 @@ function AddEditStudent() {
   const handleSubmit = (event) => {
     event.preventDefault()
     setError('')
+    setSaving(true)
     const request = isEdit
       ? studentService.update(id, { studentFullname: form.studentFullname, studentEmail: form.studentEmail })
       : studentService.create(form)
-    request.then(() => navigate('/admin/students')).catch((err) => setError(err.message))
+    request
+      .then(() => navigate('/admin/students'))
+      .catch((err) => {
+        setError(err.message)
+        setSaving(false)
+      })
   }
 
   const handleCareerSubmit = (event) => {
     event.preventDefault()
-    setError('')
+    setCareerError('')
+    setSavingCareer(true)
     studentService
       .changeCareer(id, careerForm)
-      .then(() => navigate('/admin/students'))
-      .catch((err) => setError(err.message))
+      .then((response) => {
+        setCareerForm({
+          careerCode: response.data.careerCode,
+          studyplanIdentifier: response.data.studyplanIdentifier,
+        })
+        setCareerChanged(true)
+      })
+      .catch((err) => setCareerError(err.message))
+      .finally(() => setSavingCareer(false))
   }
 
   return (
-    <div>
-      <h1>{isEdit ? 'Edit student' : 'New student'}</h1>
-      {error && <p>{error}</p>}
-      <form onSubmit={handleSubmit}>
-        <label>
-          RUN
-          <input name="studentRun" value={form.studentRun} onChange={handleChange} disabled={isEdit} />
-          <small>Enter the RUT as 12345678-k</small>
-        </label>
-        <label>
-          Full name
-          <input name="studentFullname" value={form.studentFullname} onChange={handleChange} />
-        </label>
-        <label>
-          Email
-          <input type="email" name="studentEmail" value={form.studentEmail} onChange={handleChange} />
-        </label>
-        {!isEdit && (
-          <>
-            <label>
-              Career
-              <select name="careerCode" value={form.careerCode} onChange={handleChange}>
-                <option value="">Select a career</option>
-                {activeCareers.map((career) => (
-                  <option key={career.careerId} value={career.careerCode}>
-                    {career.careerCode} - {career.careerName}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Temporary password
-              <input type="password" name="password" value={form.password} onChange={handleChange} />
-            </label>
-          </>
-        )}
-        <button type="submit">Save</button>
-        <Link to="/admin/students">Cancel</Link>
-      </form>
-
+    <>
+      <PageHeader title={isEdit ? 'Edit student' : 'New student'} backTo="/admin/students" />
+      <ErrorAlert message={error} />
+      <FormCard
+        title={isEdit ? 'Personal data' : undefined}
+        onSubmit={handleSubmit}
+        cancelTo="/admin/students"
+        saving={saving}
+      >
+        <StudentFormFields form={form} careers={activeCareers} isEdit={isEdit} onChange={handleChange} />
+      </FormCard>
       {isEdit && (
-        <form onSubmit={handleCareerSubmit}>
-          <h2>Change career and study plan</h2>
-          <p>Only allowed while the student has no enrollments or academic history.</p>
-          <label>
-            Career
-            <select name="careerCode" value={careerForm.careerCode} onChange={handleCareerChange}>
-              <option value="">Select a career</option>
-              {activeCareers.map((career) => (
-                <option key={career.careerId} value={career.careerCode}>
-                  {career.careerCode} - {career.careerName}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Study plan
-            <select
-              name="studyplanIdentifier"
-              value={careerForm.studyplanIdentifier}
-              onChange={handleCareerChange}
-            >
-              <option value="">Select a study plan</option>
-              {careerStudyplans.map((studyplan) => (
-                <option key={studyplan.studyplanId} value={studyplan.studyplanIdentifier}>
-                  {studyplan.studyplanIdentifier} ({studyplan.studyplanStatus})
-                </option>
-              ))}
-            </select>
-          </label>
-          <button type="submit">Change career</button>
-        </form>
+        <StudentCareerChangeCard
+          careerForm={careerForm}
+          careers={activeCareers}
+          studyplans={studyplans}
+          error={careerError}
+          saving={savingCareer}
+          onChange={handleCareerChange}
+          onSubmit={handleCareerSubmit}
+        />
       )}
-    </div>
+      <Snackbar
+        open={careerChanged}
+        autoHideDuration={3000}
+        onClose={() => setCareerChanged(false)}
+        message="Career and study plan updated"
+      />
+    </>
   )
 }
 

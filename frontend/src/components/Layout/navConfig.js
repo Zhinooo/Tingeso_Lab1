@@ -18,35 +18,35 @@ export const NAV = [
     role: 'ADMIN',
     groups: [
       { title: 'Academic structure', items: [
-        { label: 'Careers', to: '/admin/careers', icon: SchoolOutlinedIcon },
-        { label: 'Study plans', to: '/admin/studyplans', icon: AccountTreeOutlinedIcon },
-        { label: 'Courses', to: '/admin/courses', icon: MenuBookOutlinedIcon },
+        { label: 'Careers', to: '/admin/careers', description: 'Programs offered by the institute', icon: SchoolOutlinedIcon },
+        { label: 'Study plans', to: '/admin/studyplans', description: 'Plans of each career and the current one', icon: AccountTreeOutlinedIcon },
+        { label: 'Courses', to: '/admin/courses', description: 'Courses, workload and prerequisites', icon: MenuBookOutlinedIcon },
       ] },
       { title: 'People', items: [
-        { label: 'Students', to: '/admin/students', icon: PeopleOutlineIcon },
-        { label: 'Teachers', to: '/admin/teachers', icon: BadgeOutlinedIcon },
+        { label: 'Students', to: '/admin/students', description: 'Student records and academic status', icon: PeopleOutlineIcon },
+        { label: 'Teachers', to: '/admin/teachers', description: 'Faculty and their login accounts', icon: BadgeOutlinedIcon },
       ] },
       { title: 'Academic offer', items: [
-        { label: 'Academic periods', to: '/admin/academic-periods', icon: EventOutlinedIcon },
-        { label: 'Sections', to: '/admin/sections', icon: ViewWeekOutlinedIcon },
+        { label: 'Academic periods', to: '/admin/academic-periods', description: 'Open and close semesters', icon: EventOutlinedIcon },
+        { label: 'Sections', to: '/admin/sections', description: 'Course offer, teachers and schedules', icon: ViewWeekOutlinedIcon },
       ] },
       { title: 'Enrollment', items: [
-        { label: 'Tuitions', to: '/admin/tuitions', icon: ReceiptLongOutlinedIcon },
-        { label: 'Enrollments', to: '/admin/enrollments', icon: FactCheckOutlinedIcon },
+        { label: 'Tuitions', to: '/admin/tuitions', description: 'Register students in a period', icon: ReceiptLongOutlinedIcon },
+        { label: 'Enrollments', to: '/admin/enrollments', description: 'Course enrollments and final grades', icon: FactCheckOutlinedIcon },
       ] },
     ],
   },
   {
     role: 'TEACHER',
-    groups: [{ title: 'Teaching', items: [{ label: 'My sections', to: '/teacher/sections', icon: ClassOutlinedIcon }] }],
+    groups: [{ title: 'Teaching', items: [{ label: 'My sections', to: '/teacher/sections', description: 'Your sections and final grades', icon: ClassOutlinedIcon }] }],
   },
   {
     role: 'STUDENT',
     groups: [{ title: 'My studies', items: [
-      { label: 'My profile', to: '/student/profile', icon: PersonOutlineIcon },
-      { label: 'Enroll courses', to: '/student/enroll', icon: AddTaskIcon },
-      { label: 'My enrollments', to: '/student/enrollments', icon: ListAltOutlinedIcon },
-      { label: 'Academic history', to: '/student/history', icon: HistoryEduOutlinedIcon },
+      { label: 'My profile', to: '/student/profile', description: 'Your data and your study plan', icon: PersonOutlineIcon },
+      { label: 'Enroll courses', to: '/student/enroll', description: 'Pick your courses for an open period', icon: AddTaskIcon },
+      { label: 'My enrollments', to: '/student/enrollments', description: 'Your current and past enrollments', icon: ListAltOutlinedIcon },
+      { label: 'Academic history', to: '/student/history', description: 'Your final grades and average', icon: HistoryEduOutlinedIcon },
     ] }],
   },
 ]

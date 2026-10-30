@@ -1,16 +1,23 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import ConfirmDialog from '../../components/ConfirmDialog'
+import ErrorAlert from '../../components/ErrorAlert'
+import NewButton from '../../components/NewButton'
+import PageHeader from '../../components/PageHeader'
+import TeacherTable from '../../components/teachers/TeacherTable'
 import teacherService from '../../services/teacher.service'
 
 function TeacherList() {
   const [teachers, setTeachers] = useState([])
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [toDelete, setToDelete] = useState(null)
 
   useEffect(() => {
     teacherService
       .getAll()
       .then((response) => setTeachers(response.data))
       .catch((err) => setError(err.message))
+      .finally(() => setLoading(false))
   }, [])
 
   const handleToggleStatus = (teacher) => {
@@ -26,8 +33,9 @@ function TeacherList() {
       .catch((err) => setError(err.message))
   }
 
-  const handleDelete = (teacher) => {
-    if (!window.confirm(`Delete teacher ${teacher.teacherFullname}?`)) return
+  const handleDelete = () => {
+    const teacher = toDelete
+    setToDelete(null)
     setError('')
     teacherService
       .remove(teacher.teacherId)
@@ -36,43 +44,27 @@ function TeacherList() {
   }
 
   return (
-    <div>
-      <h1>Teachers</h1>
-      {error && <p>{error}</p>}
-      <Link to="/admin/teachers/new">New teacher</Link>
-      <table>
-        <thead>
-          <tr>
-            <th>RUN</th>
-            <th>Full name</th>
-            <th>Email</th>
-            <th>Professional title</th>
-            <th>Degree</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {teachers.map((teacher) => (
-            <tr key={teacher.teacherId}>
-              <td>{teacher.teacherRun}</td>
-              <td>{teacher.teacherFullname}</td>
-              <td>{teacher.teacherEmail}</td>
-              <td>{teacher.teacherProtitle}</td>
-              <td>{teacher.teacherDegree}</td>
-              <td>{teacher.teacherStatus}</td>
-              <td>
-                <Link to={`/admin/teachers/${teacher.teacherId}/edit`}>Edit</Link>
-                <button onClick={() => handleToggleStatus(teacher)}>
-                  {teacher.teacherStatus === 'ACTIVE' ? 'Deactivate' : 'Activate'}
-                </button>
-                <button onClick={() => handleDelete(teacher)}>Delete</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <>
+      <PageHeader
+        title="Teachers"
+        subtitle="Faculty available to teach sections."
+        action={<NewButton to="/admin/teachers/new">New teacher</NewButton>}
+      />
+      <ErrorAlert message={error} onClose={() => setError('')} />
+      <TeacherTable
+        teachers={teachers}
+        loading={loading}
+        onToggleStatus={handleToggleStatus}
+        onDelete={setToDelete}
+      />
+      <ConfirmDialog
+        open={Boolean(toDelete)}
+        title="Delete teacher?"
+        message={toDelete && `${toDelete.teacherFullname} will be permanently deleted, including their login account.`}
+        onConfirm={handleDelete}
+        onClose={() => setToDelete(null)}
+      />
+    </>
   )
 }
 
