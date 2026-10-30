@@ -2,12 +2,12 @@ import DataTable from '../DataTable'
 import SectionRow from './SectionRow'
 
 const COLUMNS = [
-  { label: 'Period' },
-  { label: 'Course' },
-  { label: 'Teacher' },
-  { label: 'Capacity', align: 'center' },
-  { label: 'Schedule' },
-  { label: 'Actions', align: 'right' },
+  { label: 'Período' },
+  { label: 'Ramo' },
+  { label: 'Docente' },
+  { label: 'Cupos', align: 'center' },
+  { label: 'Horario' },
+  { label: 'Acciones', align: 'right' },
 ]
 
 function SectionTable({ sections, loading, emptyHint, onDelete }) {
@@ -16,7 +16,7 @@ function SectionTable({ sections, loading, emptyHint, onDelete }) {
       columns={COLUMNS}
       rowCount={sections.length}
       loading={loading}
-      emptyMessage="No sections yet"
+      emptyMessage="Aún no hay secciones"
       emptyHint={emptyHint}
     >
       {sections.map((section) => (

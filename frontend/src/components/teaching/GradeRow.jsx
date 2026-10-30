@@ -36,7 +36,7 @@ function GradeRow({ enrollment, value, readOnly, saving, onChange, onSave }) {
           onClick={() => onSave(enrollment)}
           disabled={readOnly || !isValidGrade(value) || !dirty || saving}
         >
-          Save
+         Guardar
         </Button>
       </TableCell>
     </TableRow>

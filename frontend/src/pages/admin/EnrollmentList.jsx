@@ -40,7 +40,7 @@ function EnrollmentList() {
 
   return (
     <>
-      <PageHeader title="Enrollments" subtitle="Read-only view of course enrollments and final grades." />
+      <PageHeader title="Inscripciones" subtitle="Vista de solo lectura de las inscripciones y notas finales." />
       <Box sx={{ mb: 2 }}>
         <PeriodFilter periods={periods} value={academicPeriodId} onChange={handlePeriodChange} />
       </Box>

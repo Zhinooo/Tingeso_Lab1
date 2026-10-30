@@ -53,12 +53,12 @@ function AddEditAcademicPeriod() {
   return (
     <>
       <PageHeader
-        title={isEdit ? 'Edit academic period' : 'New academic period'}
+        title={isEdit ? 'Editar período académico' : 'Nuevo período académico'}
         backTo="/admin/academic-periods"
       />
       <ErrorAlert message={error} />
       <FormCard
-        description={`Period: ${formatPeriod(form)}`}
+        description={`Período: ${formatPeriod(form)}`}
         onSubmit={handleSubmit}
         cancelTo="/admin/academic-periods"
         saving={saving}

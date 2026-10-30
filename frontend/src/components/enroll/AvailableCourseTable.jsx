@@ -4,10 +4,10 @@ import AvailableCourseRow from './AvailableCourseRow'
 const COLUMNS = [
   { label: '' },
   { label: 'Sem.' },
-  { label: 'Course' },
-  { label: 'Teacher' },
-  { label: 'Schedule' },
-  { label: 'Seats' },
+  { label: 'Ramo' },
+  { label: 'Docente' },
+  { label: 'Horario' },
+  { label: 'Cupos' },
 ]
 
 function AvailableCourseTable({ courses, selected, loading, onToggle }) {
@@ -16,8 +16,8 @@ function AvailableCourseTable({ courses, selected, loading, onToggle }) {
       columns={COLUMNS}
       rowCount={courses.length}
       loading={loading}
-      emptyMessage="No courses available for this period"
-      emptyHint="Only courses of your plan with an open section and approved prerequisites are listed."
+      emptyMessage="No hay ramos disponibles para este período"
+      emptyHint="Solo aparecen ramos de tu plan con sección abierta y prerrequisitos aprobados."
     >
       {courses.map((course) => (
         <AvailableCourseRow

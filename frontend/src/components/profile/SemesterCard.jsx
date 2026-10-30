@@ -13,7 +13,7 @@ function SemesterCard({ semester, courses }) {
   return (
     <Card variant="outlined" sx={{ height: '100%', borderTop: `4px solid ${color}` }}>
       <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', px: 2, pt: 2, pb: 1 }}>
-        <Typography sx={{ fontWeight: 700, color }}>Semester {semester}</Typography>
+        <Typography sx={{ fontWeight: 700, color }}>Semestre {semester}</Typography>
         <Typography variant="caption" color="text.secondary">
           {totalSct} SCT
         </Typography>

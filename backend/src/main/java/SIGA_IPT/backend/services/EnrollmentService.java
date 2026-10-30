@@ -141,21 +141,33 @@ public class EnrollmentService {
         }
     }
 
+    private IllegalStateException scheduleConflict(String blockCode, CourseEntity first, CourseEntity second){
+        if (first.getSemester() == second.getSemester()){
+            return new IllegalStateException("Schedule conflict in block " + blockCode + " between "
+                    + first.getCourseCode() + " and " + second.getCourseCode() + ".");
+        }
+        CourseEntity lower = first.getSemester() < second.getSemester() ? first : second;
+        CourseEntity higher = lower == first ? second : first;
+        return new IllegalStateException("Schedule conflict in block " + blockCode + " between "
+                + first.getCourseCode() + " (semester " + first.getSemester() + ") and "
+                + second.getCourseCode() + " (semester " + second.getSemester() + "). Keep "
+                + lower.getCourseCode() + ", the lower semester course, and remove " + higher.getCourseCode() + ".");
+    }
+
     private void validateScheduleConflicts(List<EnrollmentEntity> current, List<SectionEntity> newSections){
-        Map<String, String> occupiedBlocks = new HashMap<>();
+        Map<String, CourseEntity> occupiedBlocks = new HashMap<>();
 
         for (EnrollmentEntity enrollment : current){
             for (SectionEntity.ScheduleBlock block : enrollment.getSection().getScheduleBlocks()){
-                occupiedBlocks.put(block.getBlockCode(), enrollment.getCourse().getCourseCode());
+                occupiedBlocks.put(block.getBlockCode(), enrollment.getCourse());
             }
         }
 
         for (SectionEntity section : newSections){
             for (SectionEntity.ScheduleBlock block : section.getScheduleBlocks()){
-                String conflictingCourse = occupiedBlocks.put(block.getBlockCode(), section.getCourse().getCourseCode());
+                CourseEntity conflictingCourse = occupiedBlocks.put(block.getBlockCode(), section.getCourse());
                 if (conflictingCourse != null){
-                    throw new IllegalStateException("Schedule conflict in block " + block.getBlockCode() + " between "
-                            + conflictingCourse + " and " + section.getCourse().getCourseCode() + ".");
+                    throw scheduleConflict(block.getBlockCode(), conflictingCourse, section.getCourse());
                 }
             }
         }

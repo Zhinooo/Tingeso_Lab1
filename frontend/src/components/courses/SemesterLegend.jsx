@@ -10,7 +10,7 @@ function SemesterLegend() {
         <Stack key={semester} direction="row" spacing={0.75} sx={{ alignItems: 'center' }}>
           <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: SEMESTER_COLORS[semester] }} />
           <Typography variant="caption" color="text.secondary">
-            Semester {semester}
+           Semestre {semester}
           </Typography>
         </Stack>
       ))}

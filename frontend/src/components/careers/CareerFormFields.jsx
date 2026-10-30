@@ -6,18 +6,18 @@ function CareerFormFields({ form, onChange }) {
     <Grid container spacing={2.5}>
       <Grid size={4}>
         <TextField
-          label="Career code"
+          label="Código de carrera"
           name="careerCode"
           value={form.careerCode}
           onChange={onChange}
           required
           fullWidth
-          helperText="Short unique code, e.g. TIN"
+          helperText="Código corto y único, ej. 10450"
         />
       </Grid>
       <Grid size={8}>
         <TextField
-          label="Career name"
+          label="Nombre de la carrera"
           name="careerName"
           value={form.careerName}
           onChange={onChange}
@@ -27,7 +27,7 @@ function CareerFormFields({ form, onChange }) {
       </Grid>
       <Grid size={12}>
         <TextField
-          label="Description"
+          label="Descripción"
           name="careerDescription"
           value={form.careerDescription}
           onChange={onChange}

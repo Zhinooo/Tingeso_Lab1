@@ -1,4 +1,5 @@
 import Chip from '@mui/material/Chip'
+import { STATUS_LABEL } from '../constants/statuses'
 
 const COLORS = {
   ACTIVE: 'success',
@@ -20,10 +21,7 @@ function StatusChip({ status, size = 'small' }) {
   if (!status) return null
 
   const color = COLORS[status] ?? 'default'
-  const label = status
-    .replaceAll('_', ' ')
-    .toLowerCase()
-    .replace(/^./, (letter) => letter.toUpperCase())
+  const label = STATUS_LABEL[status] ?? status
 
   return (
     <Chip

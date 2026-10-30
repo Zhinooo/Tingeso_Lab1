@@ -12,8 +12,7 @@ function TopBar({ sidebarWidth }) {
       sx={{
         width: `calc(100% - ${sidebarWidth}px)`,
         ml: `${sidebarWidth}px`,
-        bgcolor: 'rgba(255, 255, 255, 0.9)',
-        backdropFilter: 'blur(8px)',
+        bgcolor: 'background.paper',
         borderBottom: '1px solid',
         borderColor: 'divider',
       }}

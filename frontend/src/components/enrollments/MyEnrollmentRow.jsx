@@ -1,6 +1,5 @@
 import TableCell from '@mui/material/TableCell'
 import TableRow from '@mui/material/TableRow'
-import EventBusyOutlinedIcon from '@mui/icons-material/EventBusyOutlined'
 import { formatPeriod } from '../../utils/periods'
 import RowAction from '../RowAction'
 import StatusChip from '../StatusChip'
@@ -21,13 +20,7 @@ function MyEnrollmentRow({ enrollment, onCancel }) {
         <StatusChip status={enrollment.result} />
       </TableCell>
       <TableCell align="right">
-        <RowAction
-          title={isGraded ? 'Graded enrollments cannot be cancelled' : 'Cancel enrollment'}
-          icon={<EventBusyOutlinedIcon fontSize="small" />}
-          color="error"
-          disabled={isGraded}
-          onClick={() => onCancel(enrollment)}
-        />
+        <RowAction label="Cancelar" color="error" disabled={isGraded} onClick={() => onCancel(enrollment)} />
       </TableCell>
     </TableRow>
   )

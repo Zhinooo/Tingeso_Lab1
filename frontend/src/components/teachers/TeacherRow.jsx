@@ -1,8 +1,6 @@
 import TableCell from '@mui/material/TableCell'
 import TableRow from '@mui/material/TableRow'
 import Typography from '@mui/material/Typography'
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlineOutlined'
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
 import RowAction from '../RowAction'
 import RowActions from '../RowActions'
 import StatusChip from '../StatusChip'
@@ -25,18 +23,9 @@ function TeacherRow({ teacher, onToggleStatus, onDelete }) {
       </TableCell>
       <TableCell align="right">
         <RowActions>
-          <RowAction
-            title="Edit"
-            icon={<EditOutlinedIcon fontSize="small" />}
-            to={`/admin/teachers/${teacher.teacherId}/edit`}
-          />
+          <RowAction label="Editar" to={`/admin/teachers/${teacher.teacherId}/edit`} />
           <StatusToggleAction active={teacher.teacherStatus === 'ACTIVE'} onClick={() => onToggleStatus(teacher)} />
-          <RowAction
-            title="Delete"
-            icon={<DeleteOutlineIcon fontSize="small" />}
-            color="error"
-            onClick={() => onDelete(teacher)}
-          />
+          <RowAction label="Eliminar" color="error" onClick={() => onDelete(teacher)} />
         </RowActions>
       </TableCell>
     </TableRow>

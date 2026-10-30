@@ -24,7 +24,7 @@ httpClient.interceptors.response.use(
     if (error.response?.status === 401) {
       keycloak.login()
     }
-    const message = error.response?.data?.message ?? 'Could not connect to the server'
+    const message = error.response?.data?.message ?? 'No se pudo conectar con el servidor'
     return Promise.reject(new Error(message))
   },
 )

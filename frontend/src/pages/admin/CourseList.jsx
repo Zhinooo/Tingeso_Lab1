@@ -55,9 +55,9 @@ function CourseList() {
   return (
     <>
       <PageHeader
-        title="Courses"
-        subtitle="Courses by semester, with their weekly hours and prerequisites."
-        action={<NewButton to={newCourseUrl}>New course</NewButton>}
+        title="Ramos"
+        subtitle="Ramos por semestre, con sus horas semanales y prerrequisitos."
+        action={<NewButton to={newCourseUrl}>Nuevo ramo</NewButton>}
       />
       <Stack direction="row" spacing={3} sx={{ mb: 2, alignItems: 'center' }}>
         <StudyplanFilter studyplans={studyplans} value={studyplanId} onChange={handleStudyplanChange} />
@@ -67,13 +67,13 @@ function CourseList() {
       <CourseTable
         courses={courses}
         loading={loading}
-        emptyHint={studyplanId ? 'This study plan has no courses yet.' : 'Create a study plan first, then add its courses.'}
+        emptyHint={studyplanId ? 'Este plan de estudio aún no tiene ramos.' : 'Primero crea un plan de estudio y luego agrega sus ramos.'}
         onDelete={setToDelete}
       />
       <ConfirmDialog
         open={Boolean(toDelete)}
-        title="Delete course?"
-        message={toDelete && `${toDelete.courseCode} · ${toDelete.courseName} will be permanently deleted.`}
+        title="¿Eliminar ramo?"
+        message={toDelete && `${toDelete.courseCode} · ${toDelete.courseName} se eliminará de forma permanente.`}
         onConfirm={handleDelete}
         onClose={() => setToDelete(null)}
       />

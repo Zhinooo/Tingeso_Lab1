@@ -32,12 +32,12 @@ function MySections() {
 
   return (
     <>
-      <PageHeader title="My sections" subtitle="Sections assigned to you. Open one to record final grades." />
+      <PageHeader title="Mis secciones" subtitle="Secciones asignadas a ti. Abre una para registrar las notas finales." />
       <ErrorAlert message={error} />
       {loading && <LinearProgress sx={{ mb: 2 }} />}
       {!loading && sections.length === 0 && (
         <Paper>
-          <EmptyState message="No sections assigned yet" />
+          <EmptyState message="Aún no tienes secciones asignadas" />
         </Paper>
       )}
       <Grid container spacing={2}>

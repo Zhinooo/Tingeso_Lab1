@@ -1,9 +1,9 @@
 export const DAYS = [
-  { key: 'L', label: 'Mon' },
-  { key: 'M', label: 'Tue' },
-  { key: 'W', label: 'Wed' },
-  { key: 'J', label: 'Thu' },
-  { key: 'V', label: 'Fri' },
+  { key: 'L', label: 'Lun' },
+  { key: 'M', label: 'Mar' },
+  { key: 'W', label: 'Mié' },
+  { key: 'J', label: 'Jue' },
+  { key: 'V', label: 'Vie' },
 ]
 
 export const MODULES = [

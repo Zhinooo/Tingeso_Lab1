@@ -28,13 +28,13 @@ function ProfileSummary({ student, careerName }) {
             <Stat label="RUN" value={student.studentRun} />
           </Grid>
           <Grid size={3}>
-            <Stat label="Email" value={student.studentEmail} />
+            <Stat label="Correo" value={student.studentEmail} />
           </Grid>
           <Grid size={3}>
-            <Stat label="Career" value={careerName ?? student.careerCode} />
+            <Stat label="Carrera" value={careerName ?? student.careerCode} />
           </Grid>
           <Grid size={3}>
-            <Stat label="Study plan" value={student.studyplanIdentifier} />
+            <Stat label="Plan de estudio" value={student.studyplanIdentifier} />
           </Grid>
         </Grid>
       </Stack>

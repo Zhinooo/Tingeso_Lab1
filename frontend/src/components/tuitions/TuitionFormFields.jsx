@@ -9,13 +9,13 @@ function TuitionFormFields({ form, students, periods, onChange }) {
       <Grid size={6}>
         <TextField
           select
-          label="Student"
+          label="Estudiante"
           name="studentId"
           value={form.studentId}
           onChange={onChange}
           required
           fullWidth
-          helperText="Graduated and expelled students are not listed"
+          helperText="No se muestran estudiantes egresados ni expulsados"
         >
           {students.map((student) => (
             <MenuItem key={student.studentId} value={String(student.studentId)}>
@@ -27,13 +27,13 @@ function TuitionFormFields({ form, students, periods, onChange }) {
       <Grid size={6}>
         <TextField
           select
-          label="Academic period"
+          label="Período académico"
           name="academicPeriodId"
           value={form.academicPeriodId}
           onChange={onChange}
           required
           fullWidth
-          helperText="Only open periods"
+          helperText="Solo períodos abiertos"
         >
           {periods.map((period) => (
             <MenuItem key={period.academicPeriodId} value={String(period.academicPeriodId)}>

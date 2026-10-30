@@ -103,10 +103,10 @@ function AddEditStudent() {
 
   return (
     <>
-      <PageHeader title={isEdit ? 'Edit student' : 'New student'} backTo="/admin/students" />
+      <PageHeader title={isEdit ? 'Editar estudiante' : 'Nuevo estudiante'} backTo="/admin/students" />
       <ErrorAlert message={error} />
       <FormCard
-        title={isEdit ? 'Personal data' : undefined}
+        title={isEdit ? 'Datos personales' : undefined}
         onSubmit={handleSubmit}
         cancelTo="/admin/students"
         saving={saving}
@@ -128,7 +128,7 @@ function AddEditStudent() {
         open={careerChanged}
         autoHideDuration={3000}
         onClose={() => setCareerChanged(false)}
-        message="Career and study plan updated"
+        message="Carrera y plan de estudio actualizados"
       />
     </>
   )

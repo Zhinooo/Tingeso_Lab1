@@ -46,9 +46,9 @@ function CareerList() {
   return (
     <>
       <PageHeader
-        title="Careers"
-        subtitle="Technical programs offered by the institute."
-        action={<NewButton to="/admin/careers/new">New career</NewButton>}
+        title="Carreras"
+        subtitle="Carreras técnicas que ofrece el instituto."
+        action={<NewButton to="/admin/careers/new">Nueva carrera</NewButton>}
       />
       <ErrorAlert message={error} onClose={() => setError('')} />
       <CareerTable
@@ -59,8 +59,8 @@ function CareerList() {
       />
       <ConfirmDialog
         open={Boolean(toDelete)}
-        title="Delete career?"
-        message={toDelete && `"${toDelete.careerName}" will be permanently deleted.`}
+        title="¿Eliminar carrera?"
+        message={toDelete && `"${toDelete.careerName}" se eliminará de forma permanente.`}
         onConfirm={handleDelete}
         onClose={() => setToDelete(null)}
       />

@@ -25,7 +25,7 @@ function StudentHistory() {
 
   return (
     <>
-      <PageHeader title="Academic history" backTo="/admin/students" />
+      <PageHeader title="Historial académico" backTo="/admin/students" />
       <ErrorAlert message={error} />
       <HistoryView student={student} history={history} loading={loading} />
     </>

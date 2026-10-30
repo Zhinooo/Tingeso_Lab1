@@ -9,26 +9,26 @@ function StudyplanFormFields({ form, careers, isEdit, onChange }) {
     <Grid container spacing={2.5}>
       <Grid size={6}>
         <TextField
-          label="Identifier"
+          label="Identificador"
           name="studyplanIdentifier"
           value={form.studyplanIdentifier}
           onChange={onChange}
           required
           fullWidth
-          helperText="e.g. TIN-2025"
+          helperText="Ej. 2021.3"
         />
       </Grid>
       <Grid size={6}>
         <TextField
           select
-          label="Career"
+          label="Carrera"
           name="careerCode"
           value={form.careerCode}
           onChange={onChange}
           required
           fullWidth
           disabled={isEdit}
-          helperText={isEdit ? 'The career cannot be changed' : ' '}
+          helperText={isEdit ? 'La carrera no se puede cambiar' : ' '}
         >
           {careers.map((career) => (
             <MenuItem key={career.careerId} value={career.careerCode}>
@@ -41,7 +41,7 @@ function StudyplanFormFields({ form, careers, isEdit, onChange }) {
         <Grid size={12}>
           <FormControlLabel
             control={<Checkbox name="current" checked={form.current} onChange={onChange} />}
-            label="Current plan (new students will be assigned to it)"
+            label="Plan vigente (los nuevos estudiantes quedarán en este plan)"
           />
         </Grid>
       )}

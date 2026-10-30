@@ -65,9 +65,9 @@ function TuitionList() {
   return (
     <>
       <PageHeader
-        title="Tuitions"
-        subtitle="Students registered for each academic period."
-        action={<NewButton to={newTuitionUrl}>New tuition</NewButton>}
+        title="Matrículas"
+        subtitle="Estudiantes matriculados en cada período académico."
+        action={<NewButton to={newTuitionUrl}>Nueva matrícula</NewButton>}
       />
       <Box sx={{ mb: 2 }}>
         <PeriodFilter periods={periods} value={academicPeriodId} onChange={handlePeriodChange} />
@@ -77,13 +77,13 @@ function TuitionList() {
         tuitions={tuitions}
         studentNames={studentNames}
         loading={loading}
-        emptyHint={academicPeriodId ? 'No student is registered in this period yet.' : 'Register a student in an open period.'}
+        emptyHint={academicPeriodId ? 'Aún no hay estudiantes matriculados en este período.' : 'Matricula a un estudiante en un período abierto.'}
         onDelete={setToDelete}
       />
       <ConfirmDialog
         open={Boolean(toDelete)}
-        title="Delete tuition?"
-        message={toDelete && `Tuition of ${toDelete.studentRun} for ${formatPeriod(toDelete)} will be deleted.`}
+        title="¿Eliminar matrícula?"
+        message={toDelete && `Se eliminará la matrícula de ${toDelete.studentRun} en ${formatPeriod(toDelete)}.`}
         onConfirm={handleDelete}
         onClose={() => setToDelete(null)}
       />

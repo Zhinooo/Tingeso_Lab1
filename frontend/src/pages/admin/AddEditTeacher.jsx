@@ -68,7 +68,7 @@ function AddEditTeacher() {
 
   return (
     <>
-      <PageHeader title={isEdit ? 'Edit teacher' : 'New teacher'} backTo="/admin/teachers" />
+      <PageHeader title={isEdit ? 'Editar docente' : 'Nuevo docente'} backTo="/admin/teachers" />
       <ErrorAlert message={error} />
       <FormCard onSubmit={handleSubmit} cancelTo="/admin/teachers" saving={saving}>
         <TeacherFormFields form={form} isEdit={isEdit} onChange={handleChange} />

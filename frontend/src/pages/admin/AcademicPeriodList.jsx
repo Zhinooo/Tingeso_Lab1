@@ -53,11 +53,11 @@ function AcademicPeriodList() {
   return (
     <>
       <PageHeader
-        title="Academic periods"
-        subtitle="Semesters in which sections are offered."
-        action={<NewButton to="/admin/academic-periods/new">New period</NewButton>}
+        title="Períodos académicos"
+        subtitle="Semestres en los que se ofrecen secciones."
+        action={<NewButton to="/admin/academic-periods/new">Nuevo período</NewButton>}
       />
-      <ErrorAlert title="Cannot close period" message={closeError} onClose={() => setCloseError('')} />
+      <ErrorAlert title="No se puede cerrar el período" message={closeError} onClose={() => setCloseError('')} />
       <ErrorAlert message={error} onClose={() => setError('')} />
       <PeriodTable
         periods={periods}
@@ -67,16 +67,16 @@ function AcademicPeriodList() {
       />
       <ConfirmDialog
         open={Boolean(toClose)}
-        title={toClose && `Close period ${formatPeriod(toClose)}?`}
-        message="This action is irreversible. Every enrollment must have its final grade, and student statuses will be updated."
-        confirmLabel="Close period"
+        title={toClose && `¿Cerrar el período ${formatPeriod(toClose)}?`}
+        message="Esta acción es irreversible. Todas las inscripciones deben tener nota final y se actualizará el estado de los estudiantes."
+        confirmLabel="Cerrar período"
         onConfirm={handleClosePeriod}
         onClose={() => setToClose(null)}
       />
       <ConfirmDialog
         open={Boolean(toDelete)}
-        title="Delete period?"
-        message={toDelete && `Period ${formatPeriod(toDelete)} will be permanently deleted.`}
+        title="¿Eliminar período?"
+        message={toDelete && `El período ${formatPeriod(toDelete)} se eliminará de forma permanente.`}
         onConfirm={handleDelete}
         onClose={() => setToDelete(null)}
       />

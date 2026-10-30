@@ -3,13 +3,13 @@ import CourseRow from './CourseRow'
 
 const COLUMNS = [
   { label: 'Sem.' },
-  { label: 'Code' },
-  { label: 'Name' },
+  { label: 'Código' },
+  { label: 'Nombre' },
   { label: 'TEL' },
   { label: 'SCT' },
   { label: 'Plan' },
-  { label: 'Prerequisites' },
-  { label: 'Actions', align: 'right' },
+  { label: 'Prerrequisitos' },
+  { label: 'Acciones', align: 'right' },
 ]
 
 const compareCourses = (a, b) =>
@@ -25,7 +25,7 @@ function CourseTable({ courses, loading, emptyHint, onDelete }) {
       columns={COLUMNS}
       rowCount={courses.length}
       loading={loading}
-      emptyMessage="No courses yet"
+      emptyMessage="Aún no hay ramos"
       emptyHint={emptyHint}
     >
       {sortedCourses.map((course) => (

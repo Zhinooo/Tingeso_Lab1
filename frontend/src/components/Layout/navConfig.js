@@ -16,39 +16,31 @@ import HistoryEduOutlinedIcon from '@mui/icons-material/HistoryEduOutlined'
 export const NAV = [
   {
     role: 'ADMIN',
-    groups: [
-      { title: 'Academic structure', items: [
-        { label: 'Careers', to: '/admin/careers', description: 'Programs offered by the institute', icon: SchoolOutlinedIcon },
-        { label: 'Study plans', to: '/admin/studyplans', description: 'Plans of each career and the current one', icon: AccountTreeOutlinedIcon },
-        { label: 'Courses', to: '/admin/courses', description: 'Courses, workload and prerequisites', icon: MenuBookOutlinedIcon },
-      ] },
-      { title: 'People', items: [
-        { label: 'Students', to: '/admin/students', description: 'Student records and academic status', icon: PeopleOutlineIcon },
-        { label: 'Teachers', to: '/admin/teachers', description: 'Faculty and their login accounts', icon: BadgeOutlinedIcon },
-      ] },
-      { title: 'Academic offer', items: [
-        { label: 'Academic periods', to: '/admin/academic-periods', description: 'Open and close semesters', icon: EventOutlinedIcon },
-        { label: 'Sections', to: '/admin/sections', description: 'Course offer, teachers and schedules', icon: ViewWeekOutlinedIcon },
-      ] },
-      { title: 'Enrollment', items: [
-        { label: 'Tuitions', to: '/admin/tuitions', description: 'Register students in a period', icon: ReceiptLongOutlinedIcon },
-        { label: 'Enrollments', to: '/admin/enrollments', description: 'Course enrollments and final grades', icon: FactCheckOutlinedIcon },
-      ] },
+    items: [
+      { label: 'Carreras', to: '/admin/careers', icon: SchoolOutlinedIcon },
+      { label: 'Planes de estudio', to: '/admin/studyplans', icon: AccountTreeOutlinedIcon },
+      { label: 'Ramos', to: '/admin/courses', icon: MenuBookOutlinedIcon },
+      { label: 'Estudiantes', to: '/admin/students', icon: PeopleOutlineIcon },
+      { label: 'Docentes', to: '/admin/teachers', icon: BadgeOutlinedIcon },
+      { label: 'Períodos académicos', to: '/admin/academic-periods', icon: EventOutlinedIcon },
+      { label: 'Secciones', to: '/admin/sections', icon: ViewWeekOutlinedIcon },
+      { label: 'Matrículas', to: '/admin/tuitions', icon: ReceiptLongOutlinedIcon },
+      { label: 'Inscripciones', to: '/admin/enrollments', icon: FactCheckOutlinedIcon },
     ],
   },
   {
     role: 'TEACHER',
-    groups: [{ title: 'Teaching', items: [{ label: 'My sections', to: '/teacher/sections', description: 'Your sections and final grades', icon: ClassOutlinedIcon }] }],
+    items: [
+      { label: 'Mis secciones', to: '/teacher/sections', icon: ClassOutlinedIcon },
+    ],
   },
   {
     role: 'STUDENT',
-    groups: [{ title: 'My studies', items: [
-      { label: 'My profile', to: '/student/profile', description: 'Your data and your study plan', icon: PersonOutlineIcon },
-      { label: 'Enroll courses', to: '/student/enroll', description: 'Pick your courses for an open period', icon: AddTaskIcon },
-      { label: 'My enrollments', to: '/student/enrollments', description: 'Your current and past enrollments', icon: ListAltOutlinedIcon },
-      { label: 'Academic history', to: '/student/history', description: 'Your final grades and average', icon: HistoryEduOutlinedIcon },
-    ] }],
+    items: [
+      { label: 'Mi perfil', to: '/student/profile', icon: PersonOutlineIcon },
+      { label: 'Inscribir ramos', to: '/student/enroll', icon: AddTaskIcon },
+      { label: 'Mis inscripciones', to: '/student/enrollments', icon: ListAltOutlinedIcon },
+      { label: 'Historial académico', to: '/student/history', icon: HistoryEduOutlinedIcon },
+    ],
   },
 ]
-
-export const ROLE_LABEL = { ADMIN: 'Administrator', TEACHER: 'Teacher', STUDENT: 'Student' }

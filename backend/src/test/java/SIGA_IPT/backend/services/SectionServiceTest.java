@@ -8,6 +8,7 @@ import SIGA_IPT.backend.entities.AcademicPeriodEntity;
 import SIGA_IPT.backend.entities.CourseEntity;
 import SIGA_IPT.backend.entities.SectionEntity;
 import SIGA_IPT.backend.entities.SectionEntity.ScheduleDay;
+import SIGA_IPT.backend.entities.StudyplanEntity;
 import SIGA_IPT.backend.entities.TeacherEntity;
 import SIGA_IPT.backend.mappers.SectionMapper;
 import SIGA_IPT.backend.repositories.AcademicPeriodRepository;
@@ -52,6 +53,7 @@ class SectionServiceTest {
 
     private SectionService service;
     private CourseEntity course;
+    private StudyplanEntity plan;
     private AcademicPeriodEntity period;
     private TeacherEntity teacher;
 
@@ -68,6 +70,10 @@ class SectionServiceTest {
         course.setTheoryHours(2);
         course.setExerciseHours(2);
         course.setLabHours(0);
+        plan = new StudyplanEntity();
+        plan.setStudyplanId(1L);
+        course.setStudyplan(plan);
+        course.setSemester(1);
         period = new AcademicPeriodEntity();
         period.setAcademicPeriodId(1L);
         period.setAcademicYear(2030);
@@ -115,6 +121,21 @@ class SectionServiceTest {
                 new SectionEntity.ScheduleBlock(day1, module1),
                 new SectionEntity.ScheduleBlock(day2, module2))));
         return section;
+    }
+
+    private SectionEntity sameSemesterSection(Long id, Long courseId, String courseCode, ScheduleDay day, int module){
+        CourseEntity other = new CourseEntity();
+        other.setCourseId(courseId);
+        other.setCourseCode(courseCode);
+        other.setStudyplan(plan);
+        other.setSemester(1);
+        SectionEntity section = section(id, teacher(9L, TeacherEntity.TeacherStatus.ACTIVE), day, module, ScheduleDay.V, 6);
+        section.setCourse(other);
+        return section;
+    }
+
+    private void givenSameSemesterSections(SectionEntity... sections){
+        when(sectionRepository.findByAcademicPeriodAndCourse_StudyplanAndCourse_Semester(period, plan, 1)).thenReturn(List.of(sections));
     }
 
     private SectionEntity existingSection(){
@@ -263,6 +284,24 @@ class SectionServiceTest {
     void createRejectsBlockCountThatDoesNotMatchTheWeeklyHours(){
         assertThatThrownBy(() -> service.create(request(1L, 1L, 1L, 30, List.of(block(ScheduleDay.L, 1)))))
                 .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("must match");
+    }
+
+    @Test
+    void createRoundsOddWeeklyHoursUpToTheNextBlock(){
+        course.setLabHours(1);
+
+        SectionResponseDTO result = service.create(request(1L, 1L, 1L, 30,
+                List.of(block(ScheduleDay.L, 1), block(ScheduleDay.W, 1), block(ScheduleDay.V, 1))));
+
+        assertThat(result.scheduleBlocks()).hasSize(3);
+    }
+
+    @Test
+    void createRejectsTooFewBlocksForOddWeeklyHours(){
+        course.setLabHours(1);
+
+        assertThatThrownBy(() -> service.create(request(1L, 1L, 1L, 30, List.of(block(ScheduleDay.L, 1), block(ScheduleDay.W, 1)))))
+                .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("5 hours require 3 blocks.");
     }
 
     @Test
@@ -453,6 +492,54 @@ class SectionServiceTest {
         when(sectionRepository.findByTeacherAndAcademicPeriod(teacher, period)).thenReturn(List.of(existing));
 
         assertThat(service.update(5L, new SectionUpdateRequestDTO(1L, 35, twoBlocks())).sectionCapacity()).isEqualTo(35);
+    }
+
+    @Test
+    void createRejectsABlockUsedByAnotherCourseOfTheSameSemester(){
+        givenSameSemesterSections(sameSemesterSection(7L, 2L, "ZZ102", ScheduleDay.L, 1));
+
+        assertThatThrownBy(() -> service.create(validRequest()))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Schedule conflict: block L1 is already used by ZZ102, a course of the same semester.");
+        verify(sectionRepository, never()).save(any());
+    }
+
+    @Test
+    void createAllowsOtherBlocksOfTheSameSemester(){
+        givenSameSemesterSections(sameSemesterSection(7L, 2L, "ZZ102", ScheduleDay.M, 1));
+
+        assertThat(service.create(validRequest()).scheduleBlocks()).hasSize(2);
+    }
+
+    @Test
+    void updateRejectsANewBlockUsedByAnotherCourseOfTheSameSemester(){
+        SectionEntity existing = existingSection();
+        when(sectionRepository.findById(5L)).thenReturn(Optional.of(existing));
+        givenSameSemesterSections(existing, sameSemesterSection(7L, 2L, "ZZ102", ScheduleDay.M, 2));
+
+        assertThatThrownBy(() -> service.update(5L,
+                new SectionUpdateRequestDTO(1L, 30, List.of(block(ScheduleDay.M, 2), block(ScheduleDay.W, 1)))))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Schedule conflict: block M2 is already used by ZZ102, a course of the same semester.");
+    }
+
+    @Test
+    void updateIgnoresItsOwnSectionWhenCheckingTheSemester(){
+        SectionEntity own = existingSection();
+        when(sectionRepository.findById(5L)).thenReturn(Optional.of(own));
+        givenSameSemesterSections(own);
+
+        assertThat(service.update(5L, new SectionUpdateRequestDTO(1L, 30, List.of(block(ScheduleDay.L, 1), block(ScheduleDay.M, 3))))
+                .scheduleBlocks()).hasSize(2);
+    }
+
+    @Test
+    void updateKeepingTheScheduleDoesNotCheckTheSemester(){
+        SectionEntity existing = existingSection();
+        when(sectionRepository.findById(5L)).thenReturn(Optional.of(existing));
+        givenSameSemesterSections(sameSemesterSection(7L, 2L, "ZZ102", ScheduleDay.L, 1));
+
+        assertThat(service.update(5L, new SectionUpdateRequestDTO(1L, 40, twoBlocks())).sectionCapacity()).isEqualTo(40);
     }
 
     @Test

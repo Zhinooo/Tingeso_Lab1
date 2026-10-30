@@ -8,7 +8,7 @@ function PeriodFormFields({ form, onChange }) {
       <Grid size={6}>
         <TextField
           type="number"
-          label="Academic year"
+          label="Año académico"
           name="academicYear"
           value={form.academicYear}
           onChange={onChange}
@@ -19,15 +19,15 @@ function PeriodFormFields({ form, onChange }) {
       <Grid size={6}>
         <TextField
           select
-          label="Semester"
+          label="Semestre"
           name="academicSemester"
           value={form.academicSemester}
           onChange={onChange}
           required
           fullWidth
         >
-          <MenuItem value={1}>1 · First semester</MenuItem>
-          <MenuItem value={2}>2 · Second semester</MenuItem>
+          <MenuItem value={1}>1 · Primer semestre</MenuItem>
+          <MenuItem value={2}>2 · Segundo semestre</MenuItem>
         </TextField>
       </Grid>
     </Grid>

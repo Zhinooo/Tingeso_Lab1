@@ -15,12 +15,12 @@ function StudentFormFields({ form, careers, isEdit, onChange }) {
           required
           fullWidth
           disabled={isEdit}
-          helperText={isEdit ? 'The RUN cannot be changed' : RUN_HELPER_TEXT}
+          helperText={isEdit ? 'El RUN no se puede cambiar' : RUN_HELPER_TEXT}
         />
       </Grid>
       <Grid size={6}>
         <TextField
-          label="Full name"
+          label="Nombre completo"
           name="studentFullname"
           value={form.studentFullname}
           onChange={onChange}
@@ -32,7 +32,7 @@ function StudentFormFields({ form, careers, isEdit, onChange }) {
       <Grid size={6}>
         <TextField
           type="email"
-          label="Email"
+          label="Correo"
           name="studentEmail"
           value={form.studentEmail}
           onChange={onChange}
@@ -45,13 +45,13 @@ function StudentFormFields({ form, careers, isEdit, onChange }) {
           <Grid size={6}>
             <TextField
               select
-              label="Career"
+              label="Carrera"
               name="careerCode"
               value={form.careerCode}
               onChange={onChange}
               required
               fullWidth
-              helperText="Only active careers. The current study plan is assigned automatically."
+              helperText="Solo carreras activas. El plan vigente se asigna automáticamente."
             >
               {careers.map((career) => (
                 <MenuItem key={career.careerId} value={career.careerCode}>
@@ -63,13 +63,13 @@ function StudentFormFields({ form, careers, isEdit, onChange }) {
           <Grid size={6}>
             <TextField
               type="password"
-              label="Temporary password"
+              label="Contraseña temporal"
               name="password"
               value={form.password}
               onChange={onChange}
               required
               fullWidth
-              helperText={`At least ${MIN_PASSWORD_LENGTH} characters. The student will change it on first login.`}
+              helperText={`Mínimo ${MIN_PASSWORD_LENGTH} caracteres. El estudiante la cambiará al iniciar sesión por primera vez.`}
             />
           </Grid>
         </>

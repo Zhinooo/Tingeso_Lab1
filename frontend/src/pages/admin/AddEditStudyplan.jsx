@@ -49,7 +49,7 @@ function AddEditStudyplan() {
 
   return (
     <>
-      <PageHeader title={isEdit ? 'Edit study plan' : 'New study plan'} backTo="/admin/studyplans" />
+      <PageHeader title={isEdit ? 'Editar plan de estudio' : 'Nuevo plan de estudio'} backTo="/admin/studyplans" />
       <ErrorAlert message={error} />
       <FormCard onSubmit={handleSubmit} cancelTo="/admin/studyplans" saving={saving}>
         <StudyplanFormFields form={form} careers={careers} isEdit={isEdit} onChange={handleChange} />

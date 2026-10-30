@@ -8,11 +8,11 @@ import StatusChip from './StatusChip'
 import { formatPeriod } from '../utils/periods'
 
 const COLUMNS = [
-  { label: 'Period' },
-  { label: 'Code' },
-  { label: 'Course' },
-  { label: 'Final grade', align: 'center' },
-  { label: 'Result' },
+  { label: 'Período' },
+  { label: 'Código' },
+  { label: 'Ramo' },
+  { label: 'Nota final', align: 'center' },
+  { label: 'Resultado' },
 ]
 
 function HistoryView({ student, history, loading }) {
@@ -28,19 +28,19 @@ function HistoryView({ student, history, loading }) {
         <Paper sx={{ p: 3, mb: 3 }}>
           <Grid container spacing={2}>
             <Grid size={4}>
-              <Stat label="Student" value={student.studentFullname} />
+              <Stat label="Estudiante" value={student.studentFullname} />
             </Grid>
             <Grid size={2}>
               <Stat label="RUN" value={student.studentRun} />
             </Grid>
             <Grid size={2}>
-              <Stat label="Career" value={student.careerCode} />
+              <Stat label="Carrera" value={student.careerCode} />
             </Grid>
             <Grid size={2}>
-              <Stat label="Average" value={average} />
+              <Stat label="Promedio" value={average} />
             </Grid>
             <Grid size={2}>
-              <Stat label="Approved" value={`${approved} / ${graded.length}`} />
+              <Stat label="Aprobados" value={`${approved} / ${graded.length}`} />
             </Grid>
           </Grid>
         </Paper>
@@ -49,8 +49,8 @@ function HistoryView({ student, history, loading }) {
         columns={COLUMNS}
         rowCount={history.length}
         loading={loading}
-        emptyMessage="No graded courses yet"
-        emptyHint="Final grades will appear here once periods are closed."
+        emptyMessage="Aún no hay ramos con nota"
+        emptyHint="Las notas finales aparecerán aquí cuando se cierren los períodos."
       >
         {history.map((enrollment) => (
           <TableRow key={enrollment.enrollmentId} hover>

@@ -114,7 +114,7 @@ function AddEditCourse() {
 
   return (
     <>
-      <PageHeader title={isEdit ? 'Edit course' : 'New course'} backTo={listUrl} />
+      <PageHeader title={isEdit ? 'Editar ramo' : 'Nuevo ramo'} backTo={listUrl} />
       <ErrorAlert message={error} />
       <FormCard onSubmit={handleSubmit} cancelTo={listUrl} saving={saving}>
         <CourseFormFields form={form} studyplans={studyplans} isEdit={isEdit} onChange={handleChange} />

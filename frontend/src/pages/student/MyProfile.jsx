@@ -32,7 +32,7 @@ function MyProfile() {
 
   return (
     <>
-      <PageHeader title="My profile" />
+      <PageHeader title="Mi perfil" />
       <ErrorAlert message={error} />
       {!student && !error && <LinearProgress />}
       {student && (

@@ -15,7 +15,7 @@ function AuthProvider({ children }) {
   }, [])
 
   if (error) return <p>{error}</p>
-  if (!me) return <p>Loading...</p>
+  if (!me) return <p>Cargando...</p>
 
   const hasRole = (role) => me.roles.includes(role)
 

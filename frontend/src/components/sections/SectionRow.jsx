@@ -1,8 +1,6 @@
 import TableCell from '@mui/material/TableCell'
 import TableRow from '@mui/material/TableRow'
 import Typography from '@mui/material/Typography'
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlineOutlined'
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
 import { formatPeriod } from '../../utils/periods'
 import RowAction from '../RowAction'
 import RowActions from '../RowActions'
@@ -27,17 +25,8 @@ function SectionRow({ section, onDelete }) {
       </TableCell>
       <TableCell align="right">
         <RowActions>
-          <RowAction
-            title="Edit"
-            icon={<EditOutlinedIcon fontSize="small" />}
-            to={`/admin/sections/${section.sectionId}/edit`}
-          />
-          <RowAction
-            title="Delete"
-            icon={<DeleteOutlineIcon fontSize="small" />}
-            color="error"
-            onClick={() => onDelete(section)}
-          />
+          <RowAction label="Editar" to={`/admin/sections/${section.sectionId}/edit`} />
+          <RowAction label="Eliminar" color="error" onClick={() => onDelete(section)} />
         </RowActions>
       </TableCell>
     </TableRow>

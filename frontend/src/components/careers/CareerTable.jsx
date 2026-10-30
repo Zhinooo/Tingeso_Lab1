@@ -2,11 +2,11 @@ import DataTable from '../DataTable'
 import CareerRow from './CareerRow'
 
 const COLUMNS = [
-  { label: 'Code' },
-  { label: 'Name' },
-  { label: 'Description' },
-  { label: 'Status' },
-  { label: 'Actions', align: 'right' },
+  { label: 'Código' },
+  { label: 'Nombre' },
+  { label: 'Descripción' },
+  { label: 'Estado' },
+  { label: 'Acciones', align: 'right' },
 ]
 
 function CareerTable({ careers, loading, onToggleStatus, onDelete }) {
@@ -15,8 +15,8 @@ function CareerTable({ careers, loading, onToggleStatus, onDelete }) {
       columns={COLUMNS}
       rowCount={careers.length}
       loading={loading}
-      emptyMessage="No careers yet"
-      emptyHint="Create the first career to start building study plans."
+      emptyMessage="Aún no hay carreras"
+      emptyHint="Crea la primera carrera para empezar a armar planes de estudio."
     >
       {careers.map((career) => (
         <CareerRow key={career.careerId} career={career} onToggleStatus={onToggleStatus} onDelete={onDelete} />

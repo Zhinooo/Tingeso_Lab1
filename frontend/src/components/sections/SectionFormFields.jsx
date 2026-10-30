@@ -10,14 +10,14 @@ function SectionFormFields({ form, periods, courses, teachers, isEdit, onChange 
       <Grid size={6}>
         <TextField
           select
-          label="Academic period"
+          label="Período académico"
           name="academicPeriodId"
           value={form.academicPeriodId}
           onChange={onChange}
           required
           fullWidth
           disabled={isEdit}
-          helperText={isEdit ? 'The period cannot be changed' : 'Only open periods'}
+          helperText={isEdit ? 'El período no se puede cambiar' : 'Solo períodos abiertos'}
         >
           {periods.map((period) => (
             <MenuItem key={period.academicPeriodId} value={String(period.academicPeriodId)}>
@@ -29,14 +29,14 @@ function SectionFormFields({ form, periods, courses, teachers, isEdit, onChange 
       <Grid size={6}>
         <TextField
           select
-          label="Course"
+          label="Ramo"
           name="courseId"
           value={form.courseId}
           onChange={onChange}
           required
           fullWidth
           disabled={isEdit}
-          helperText={isEdit ? 'The course cannot be changed' : ' '}
+          helperText={isEdit ? 'El ramo no se puede cambiar' : ' '}
         >
           {courses.map((course) => (
             <MenuItem key={course.courseId} value={String(course.courseId)}>
@@ -48,13 +48,13 @@ function SectionFormFields({ form, periods, courses, teachers, isEdit, onChange 
       <Grid size={6}>
         <TextField
           select
-          label="Teacher"
+          label="Docente"
           name="teacherId"
           value={form.teacherId}
           onChange={onChange}
           required
           fullWidth
-          helperText="Only active teachers"
+          helperText="Solo docentes activos"
         >
           {teachers.map((teacher) => (
             <MenuItem key={teacher.teacherId} value={String(teacher.teacherId)}>
@@ -66,13 +66,13 @@ function SectionFormFields({ form, periods, courses, teachers, isEdit, onChange 
       <Grid size={6}>
         <TextField
           type="number"
-          label="Capacity"
+          label="Cupos"
           name="sectionCapacity"
           value={form.sectionCapacity}
           onChange={onChange}
           required
           fullWidth
-          helperText={`Between ${MIN_CAPACITY} and ${MAX_CAPACITY}`}
+          helperText={`Entre ${MIN_CAPACITY} y ${MAX_CAPACITY}`}
           slotProps={{ htmlInput: { min: MIN_CAPACITY, max: MAX_CAPACITY } }}
         />
       </Grid>

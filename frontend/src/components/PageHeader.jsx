@@ -16,7 +16,7 @@ function PageHeader({ title, subtitle, backTo, action }) {
           size="small"
           sx={{ mb: 1, ml: -1 }}
         >
-          Back
+         Volver
         </Button>
       )}
       <Stack direction="row" spacing={2} sx={{ justifyContent: 'space-between', alignItems: 'center' }}>

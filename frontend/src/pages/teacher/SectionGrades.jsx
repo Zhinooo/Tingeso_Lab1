@@ -57,15 +57,15 @@ function SectionGrades() {
         setEnrollments((current) =>
           current.map((item) => (item.enrollmentId === enrollment.enrollmentId ? response.data : item)),
         )
-        setSavedMessage(`Grade saved for ${enrollment.studentRun}`)
+        setSavedMessage(`Nota guardada para ${enrollment.studentRun}`)
       })
       .catch((err) => setError(err.message))
       .finally(() => setSavingId(null))
   }
 
-  const title = section ? `${section.courseCode} · ${section.courseName}` : 'Section'
+  const title = section ? `${section.courseCode} · ${section.courseName}` : 'Sección'
   const subtitle = section
-    ? `Period ${formatPeriod(section)} · ${enrollments.length} students${isClosed ? ' · Period closed (read only)' : ''}`
+    ? `Período ${formatPeriod(section)} · ${enrollments.length} estudiantes${isClosed ? ' · Período cerrado (solo lectura)' : ''}`
     : undefined
 
   return (

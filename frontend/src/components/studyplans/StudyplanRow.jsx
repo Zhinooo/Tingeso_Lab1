@@ -1,10 +1,5 @@
 import TableCell from '@mui/material/TableCell'
 import TableRow from '@mui/material/TableRow'
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlineOutlined'
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
-import MenuBookOutlinedIcon from '@mui/icons-material/MenuBookOutlined'
-import StarIcon from '@mui/icons-material/Star'
-import StarOutlineIcon from '@mui/icons-material/StarOutlineOutlined'
 import RowAction from '../RowAction'
 import RowActions from '../RowActions'
 import StatusChip from '../StatusChip'
@@ -22,28 +17,17 @@ function StudyplanRow({ studyplan, onToggleStatus, onDelete }) {
       <TableCell align="right">
         <RowActions>
           <RowAction
-            title="Courses"
-            icon={<MenuBookOutlinedIcon fontSize="small" />}
+            label="Ramos"
             color="primary"
             to={`/admin/courses?studyplanId=${studyplan.studyplanId}`}
           />
+          <RowAction label="Editar" to={`/admin/studyplans/${studyplan.studyplanId}/edit`} />
           <RowAction
-            title="Edit"
-            icon={<EditOutlinedIcon fontSize="small" />}
-            to={`/admin/studyplans/${studyplan.studyplanId}/edit`}
-          />
-          <RowAction
-            title={isCurrent ? 'Set not current' : 'Set current'}
-            icon={isCurrent ? <StarIcon fontSize="small" /> : <StarOutlineIcon fontSize="small" />}
-            color={isCurrent ? 'warning' : 'default'}
+            label={isCurrent ? 'Quitar vigente' : 'Dejar vigente'}
+            color={isCurrent ? 'inherit' : 'warning'}
             onClick={() => onToggleStatus(studyplan)}
           />
-          <RowAction
-            title="Delete"
-            icon={<DeleteOutlineIcon fontSize="small" />}
-            color="error"
-            onClick={() => onDelete(studyplan)}
-          />
+          <RowAction label="Eliminar" color="error" onClick={() => onDelete(studyplan)} />
         </RowActions>
       </TableCell>
     </TableRow>

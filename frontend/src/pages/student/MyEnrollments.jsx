@@ -34,14 +34,14 @@ function MyEnrollments() {
 
   return (
     <>
-      <PageHeader title="My enrollments" action={<NewButton to="/student/enroll">Enroll courses</NewButton>} />
+      <PageHeader title="Mis inscripciones" action={<NewButton to="/student/enroll">Inscribir ramos</NewButton>} />
       <ErrorAlert message={error} onClose={() => setError('')} />
       <MyEnrollmentTable enrollments={enrollments} loading={loading} onCancel={setToCancel} />
       <ConfirmDialog
         open={Boolean(toCancel)}
-        title="Cancel enrollment?"
-        message={toCancel && `You will be removed from ${toCancel.courseCode} · ${toCancel.courseName}.`}
-        confirmLabel="Cancel enrollment"
+        title="¿Cancelar inscripción?"
+        message={toCancel && `Se cancelará tu inscripción en ${toCancel.courseCode} · ${toCancel.courseName}.`}
+        confirmLabel="Cancelar inscripción"
         onConfirm={handleCancel}
         onClose={() => setToCancel(null)}
       />

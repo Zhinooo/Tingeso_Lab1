@@ -8,7 +8,7 @@ function SeatsIndicator({ available, capacity }) {
   return (
     <>
       <Typography variant="body2" sx={{ fontWeight: 600, color: isFull ? 'error.main' : 'text.primary' }}>
-        {isFull ? 'Full' : `${available} / ${capacity}`}
+        {isFull ? 'Sin cupos' : `${available} / ${capacity}`}
       </Typography>
       <LinearProgress
         variant="determinate"

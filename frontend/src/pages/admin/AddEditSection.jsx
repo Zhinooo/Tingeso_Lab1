@@ -30,6 +30,7 @@ function AddEditSection() {
   const [periods, setPeriods] = useState([])
   const [courses, setCourses] = useState([])
   const [teachers, setTeachers] = useState([])
+  const [periodSections, setPeriodSections] = useState([])
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
   const isEdit = Boolean(id)
@@ -58,6 +59,44 @@ function AddEditSection() {
       .catch((err) => setError(err.message))
   }, [id])
 
+  useEffect(() => {
+    if (!form.academicPeriodId) return
+    sectionService
+      .getByAcademicPeriod(form.academicPeriodId)
+      .then((response) => setPeriodSections(response.data))
+      .catch((err) => setError(err.message))
+  }, [form.academicPeriodId])
+
+  const selectedCourse = courses.find((course) => String(course.courseId) === form.courseId)
+
+  const isSameSemester = (section) => {
+    const course = courses.find((item) => item.courseId === section.courseId)
+    return (
+      Boolean(selectedCourse && course) &&
+      course.studyplanId === selectedCourse.studyplanId &&
+      course.semester === selectedCourse.semester
+    )
+  }
+
+  const isTaken = (section) => String(section.teacherId) === form.teacherId || isSameSemester(section)
+
+  const otherSections = periodSections.filter(
+    (section) => String(section.academicPeriodId) === form.academicPeriodId && section.sectionId !== Number(id),
+  )
+
+  const occupiedBlocks = {}
+  otherSections
+    .filter(isTaken)
+    .forEach((section) => {
+      section.scheduleBlocks.forEach((block) => {
+        occupiedBlocks[block] = section.courseCode
+      })
+    })
+
+  const availableCourses = isEdit
+    ? courses
+    : courses.filter((course) => !otherSections.some((section) => section.courseId === course.courseId))
+
   const availablePeriods = periods.filter(
     (period) =>
       period.academicPeriodStatus === 'OPEN' || String(period.academicPeriodId) === form.academicPeriodId,
@@ -65,9 +104,8 @@ function AddEditSection() {
   const availableTeachers = teachers.filter(
     (teacher) => teacher.teacherStatus === 'ACTIVE' || String(teacher.teacherId) === form.teacherId,
   )
-  const selectedCourse = courses.find((course) => String(course.courseId) === form.courseId)
   const requiredBlocks = selectedCourse
-    ? (selectedCourse.theoryHours + selectedCourse.exerciseHours + selectedCourse.labHours) / HOURS_PER_BLOCK
+    ? Math.ceil((selectedCourse.theoryHours + selectedCourse.exerciseHours + selectedCourse.labHours) / HOURS_PER_BLOCK)
     : null
   const listUrl = form.academicPeriodId
     ? `/admin/sections?academicPeriodId=${form.academicPeriodId}`
@@ -75,7 +113,11 @@ function AddEditSection() {
 
   const handleChange = (event) => {
     const { name, value } = event.target
-    setForm({ ...form, [name]: value })
+    const next = { ...form, [name]: value }
+    if (name === 'academicPeriodId') {
+      next.courseId = ''
+    }
+    setForm(next)
   }
 
   const toggleBlock = (code) => {
@@ -112,19 +154,24 @@ function AddEditSection() {
 
   return (
     <>
-      <PageHeader title={isEdit ? 'Edit section' : 'New section'} backTo={listUrl} />
+      <PageHeader title={isEdit ? 'Editar sección' : 'Nueva sección'} backTo={listUrl} />
       <ErrorAlert message={error} />
       <FormCard onSubmit={handleSubmit} cancelTo={listUrl} saving={saving}>
         <SectionFormFields
           form={form}
           periods={availablePeriods}
-          courses={courses}
+          courses={availableCourses}
           teachers={availableTeachers}
           isEdit={isEdit}
           onChange={handleChange}
         />
         <Divider sx={{ my: 3 }} />
-        <ScheduleGrid selected={form.scheduleBlocks} required={requiredBlocks} onToggle={toggleBlock} />
+        <ScheduleGrid
+          selected={form.scheduleBlocks}
+          occupied={occupiedBlocks}
+          required={requiredBlocks}
+          onToggle={toggleBlock}
+        />
       </FormCard>
     </>
   )

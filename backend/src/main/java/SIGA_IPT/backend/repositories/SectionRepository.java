@@ -3,6 +3,7 @@ package SIGA_IPT.backend.repositories;
 import SIGA_IPT.backend.entities.AcademicPeriodEntity;
 import SIGA_IPT.backend.entities.CourseEntity;
 import SIGA_IPT.backend.entities.SectionEntity;
+import SIGA_IPT.backend.entities.StudyplanEntity;
 import SIGA_IPT.backend.entities.TeacherEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import jakarta.persistence.LockModeType;
@@ -28,6 +29,8 @@ public interface SectionRepository extends JpaRepository<SectionEntity, Long>{
     List<SectionEntity> findByTeacherAndAcademicPeriod(TeacherEntity teacher, AcademicPeriodEntity academicPeriod);
 
     List<SectionEntity> findByAcademicPeriod(AcademicPeriodEntity academicPeriod);
+
+    List<SectionEntity> findByAcademicPeriodAndCourse_StudyplanAndCourse_Semester(AcademicPeriodEntity academicPeriod, StudyplanEntity studyplan, int semester);
 
     List<SectionEntity> findByTeacher(TeacherEntity teacher);
 

@@ -3,12 +3,12 @@ import TeacherRow from './TeacherRow'
 
 const COLUMNS = [
   { label: 'RUN' },
-  { label: 'Full name' },
-  { label: 'Email' },
-  { label: 'Professional title' },
-  { label: 'Degree' },
-  { label: 'Status' },
-  { label: 'Actions', align: 'right' },
+  { label: 'Nombre completo' },
+  { label: 'Correo' },
+  { label: 'Título profesional' },
+  { label: 'Grado' },
+  { label: 'Estado' },
+  { label: 'Acciones', align: 'right' },
 ]
 
 function TeacherTable({ teachers, loading, onToggleStatus, onDelete }) {
@@ -17,8 +17,8 @@ function TeacherTable({ teachers, loading, onToggleStatus, onDelete }) {
       columns={COLUMNS}
       rowCount={teachers.length}
       loading={loading}
-      emptyMessage="No teachers yet"
-      emptyHint="Add a teacher to be able to assign sections."
+      emptyMessage="Aún no hay docentes"
+      emptyHint="Agrega un docente para poder asignarle secciones."
     >
       {teachers.map((teacher) => (
         <TeacherRow

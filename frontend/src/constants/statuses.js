@@ -1,0 +1,15 @@
+export const STATUS_LABEL = {
+  ACTIVE: 'Activo',
+  INACTIVE: 'Inactivo',
+  CURRENT: 'Vigente',
+  NOT_CURRENT: 'No vigente',
+  OPEN: 'Abierto',
+  CLOSED: 'Cerrado',
+  REGULAR: 'Regular',
+  DEFERRED: 'Postergado',
+  TEMPORARY_WITHDRAWAL: 'Retiro temporal',
+  GRADUATED: 'Egresado',
+  EXPELLED: 'Expulsado',
+  APPROVED: 'Aprobado',
+  FAILED: 'Reprobado',
+}

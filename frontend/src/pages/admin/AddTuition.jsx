@@ -54,7 +54,7 @@ function AddTuition() {
 
   return (
     <>
-      <PageHeader title="New tuition" backTo={listUrl} />
+      <PageHeader title="Nueva matrícula" backTo={listUrl} />
       <ErrorAlert message={error} />
       <FormCard onSubmit={handleSubmit} cancelTo={listUrl} saving={saving}>
         <TuitionFormFields

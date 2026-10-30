@@ -1,6 +1,5 @@
 import TableCell from '@mui/material/TableCell'
 import TableRow from '@mui/material/TableRow'
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlineOutlined'
 import { formatPeriod } from '../../utils/periods'
 import RowAction from '../RowAction'
 
@@ -12,12 +11,7 @@ function TuitionRow({ tuition, studentName, onDelete }) {
       <TableCell>{formatPeriod(tuition)}</TableCell>
       <TableCell>{tuition.tuitionDate}</TableCell>
       <TableCell align="right">
-        <RowAction
-          title="Delete"
-          icon={<DeleteOutlineIcon fontSize="small" />}
-          color="error"
-          onClick={() => onDelete(tuition)}
-        />
+        <RowAction label="Eliminar" color="error" onClick={() => onDelete(tuition)} />
       </TableCell>
     </TableRow>
   )

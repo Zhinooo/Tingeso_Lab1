@@ -46,9 +46,9 @@ function TeacherList() {
   return (
     <>
       <PageHeader
-        title="Teachers"
-        subtitle="Faculty available to teach sections."
-        action={<NewButton to="/admin/teachers/new">New teacher</NewButton>}
+        title="Docentes"
+        subtitle="Docentes disponibles para dictar secciones."
+        action={<NewButton to="/admin/teachers/new">Nuevo docente</NewButton>}
       />
       <ErrorAlert message={error} onClose={() => setError('')} />
       <TeacherTable
@@ -59,8 +59,8 @@ function TeacherList() {
       />
       <ConfirmDialog
         open={Boolean(toDelete)}
-        title="Delete teacher?"
-        message={toDelete && `${toDelete.teacherFullname} will be permanently deleted, including their login account.`}
+        title="¿Eliminar docente?"
+        message={toDelete && `${toDelete.teacherFullname} se eliminará de forma permanente, junto con su cuenta de acceso.`}
         onConfirm={handleDelete}
         onClose={() => setToDelete(null)}
       />

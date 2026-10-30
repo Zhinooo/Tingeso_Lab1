@@ -29,5 +29,5 @@ keycloak
   })
   .catch((error) => {
     console.error('Keycloak init failed', error)
-    root.render(<p>Could not connect to the login server.</p>)
+    root.render(<p>No se pudo conectar con el servidor de inicio de sesión.</p>)
   })

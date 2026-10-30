@@ -101,9 +101,10 @@ public class SectionService {
 
     private void validateBlockCount(CourseEntity course, List<ScheduleBlockDTO> blocks){
         int weeklyHours = course.getTheoryHours() + course.getExerciseHours() + course.getLabHours();
-        if (blocks.size() * HOURS_PER_BLOCK != weeklyHours){
+        int requiredBlocks = (weeklyHours + HOURS_PER_BLOCK - 1) / HOURS_PER_BLOCK;
+        if (blocks.size() != requiredBlocks){
             throw new IllegalArgumentException("The number of schedule blocks must match the weekly TEL hours of the course: "
-                    + weeklyHours + " hours require " + weeklyHours / (double) HOURS_PER_BLOCK + " blocks.");
+                    + weeklyHours + " hours require " + requiredBlocks + " blocks.");
         }
     }
 
@@ -117,6 +118,23 @@ public class SectionService {
             for (SectionEntity.ScheduleBlock block : other.getScheduleBlocks()){
                 if (requested.contains(block.getBlockCode())){
                     throw new IllegalStateException("Schedule conflict: the teacher already has a section in block " + block.getBlockCode() + ".");
+                }
+            }
+        }
+    }
+
+    private void validateSemesterSchedule(CourseEntity course, AcademicPeriodEntity academicPeriod, List<ScheduleBlockDTO> blocks, Long sectionIdToIgnore){
+        Set<String> requested = blocks.stream().map(this::blockCode).collect(Collectors.toSet());
+
+        for (SectionEntity other : sectionRepository.findByAcademicPeriodAndCourse_StudyplanAndCourse_Semester(
+                academicPeriod, course.getStudyplan(), course.getSemester())){
+            if (other.getSectionId().equals(sectionIdToIgnore)){
+                continue;
+            }
+            for (SectionEntity.ScheduleBlock block : other.getScheduleBlocks()){
+                if (requested.contains(block.getBlockCode())){
+                    throw new IllegalStateException("Schedule conflict: block " + block.getBlockCode() + " is already used by "
+                            + other.getCourse().getCourseCode() + ", a course of the same semester.");
                 }
             }
         }
@@ -170,6 +188,7 @@ public class SectionService {
 
         validateBlockCount(course, dto.scheduleBlocks());
         validateTeacherSchedule(teacher, academicPeriod, dto.scheduleBlocks(), null);
+        validateSemesterSchedule(course, academicPeriod, dto.scheduleBlocks(), null);
 
         SectionEntity section = sectionMapper.toEntity(dto, course, academicPeriod, teacher);
 
@@ -229,6 +248,9 @@ public class SectionService {
         }
 
         validateTeacherSchedule(teacher, section.getAcademicPeriod(), dto.scheduleBlocks(), section.getSectionId());
+        if (scheduleChanged){
+            validateSemesterSchedule(section.getCourse(), section.getAcademicPeriod(), dto.scheduleBlocks(), section.getSectionId());
+        }
 
         sectionMapper.updateEntity(section, dto, teacher);
 

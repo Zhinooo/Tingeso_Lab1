@@ -17,13 +17,13 @@ function TeacherSectionCard({ section, isOpen }) {
         <Stack direction="row" sx={{ justifyContent: 'space-between', mb: 1.5 }}>
           <Chip
             size="small"
-            label={`${formatPeriod(section)} · ${isOpen ? 'Open' : 'Closed'}`}
+            label={`${formatPeriod(section)} · ${isOpen ? 'Abierto' : 'Cerrado'}`}
             color={isOpen ? 'primary' : 'default'}
             variant={isOpen ? 'filled' : 'outlined'}
           />
           <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center', color: 'text.secondary' }}>
             <GroupsOutlinedIcon fontSize="small" />
-            <Typography variant="body2">Capacity {section.sectionCapacity}</Typography>
+            <Typography variant="body2">Cupos {section.sectionCapacity}</Typography>
           </Stack>
         </Stack>
         <Typography variant="caption" sx={{ fontFamily: 'monospace', fontWeight: 700, color: 'primary.main' }}>
@@ -36,7 +36,7 @@ function TeacherSectionCard({ section, isOpen }) {
       </CardContent>
       <CardActions sx={{ px: 2, pb: 2 }}>
         <Button component={RouterLink} to={`/teacher/sections/${section.sectionId}`} variant="contained" fullWidth>
-          Students and grades
+         Estudiantes y notas
         </Button>
       </CardActions>
     </Card>

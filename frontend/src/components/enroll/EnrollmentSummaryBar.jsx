@@ -13,12 +13,12 @@ function selectionColor(count) {
 
 function EnrollmentSummaryBar({ count, saving, onSubmit }) {
   return (
-    <Paper sx={{ position: 'sticky', bottom: 16, mt: 2, p: 2, boxShadow: '0 8px 24px rgba(15, 39, 71, 0.08)' }}>
+    <Paper sx={{ position: 'sticky', bottom: 16, mt: 2, p: 2 }}>
       <Stack direction="row" spacing={2} sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
         <Box>
-          <Chip label={`${count} selected`} color={selectionColor(count)} sx={{ mr: 1 }} />
+          <Chip label={`${count} seleccionados`} color={selectionColor(count)} sx={{ mr: 1 }} />
           <Typography component="span" variant="body2" color="text.secondary">
-            Select between {MIN_COURSES} and {MAX_COURSES} courses per period (fewer only if fewer are available).
+            Elige entre {MIN_COURSES} y {MAX_COURSES} ramos por período (menos solo si hay menos disponibles).
           </Typography>
         </Box>
         <Button
@@ -27,7 +27,7 @@ function EnrollmentSummaryBar({ count, saving, onSubmit }) {
           onClick={onSubmit}
           disabled={count === 0 || count > MAX_COURSES || saving}
         >
-          Enroll
+         Inscribir
         </Button>
       </Stack>
     </Paper>

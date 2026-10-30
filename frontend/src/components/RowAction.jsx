@@ -1,22 +1,19 @@
 import { Link as RouterLink } from 'react-router-dom'
-import IconButton from '@mui/material/IconButton'
-import Tooltip from '@mui/material/Tooltip'
+import Button from '@mui/material/Button'
 
-function RowAction({ title, icon, onClick, to, color = 'default', disabled }) {
-  const button = to ? (
-    <IconButton component={RouterLink} to={to} size="small" color={color} aria-label={title}>
-      {icon}
-    </IconButton>
-  ) : (
-    <IconButton onClick={onClick} size="small" color={color} aria-label={title} disabled={disabled}>
-      {icon}
-    </IconButton>
-  )
+function RowAction({ label, onClick, to, color = 'primary', disabled }) {
+  if (to) {
+    return (
+      <Button component={RouterLink} to={to} size="small" variant="contained" color={color} disableElevation>
+        {label}
+      </Button>
+    )
+  }
 
   return (
-    <Tooltip title={title}>
-      <span>{button}</span>
-    </Tooltip>
+    <Button onClick={onClick} size="small" variant="contained" color={color} disabled={disabled} disableElevation>
+      {label}
+    </Button>
   )
 }
 

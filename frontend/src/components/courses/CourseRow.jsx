@@ -1,8 +1,6 @@
 import TableCell from '@mui/material/TableCell'
 import TableRow from '@mui/material/TableRow'
 import Typography from '@mui/material/Typography'
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlineOutlined'
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
 import { SEMESTER_COLORS } from '../../constants/semesters'
 import RowAction from '../RowAction'
 import RowActions from '../RowActions'
@@ -34,17 +32,8 @@ function CourseRow({ course, onDelete }) {
       </TableCell>
       <TableCell align="right">
         <RowActions>
-          <RowAction
-            title="Edit"
-            icon={<EditOutlinedIcon fontSize="small" />}
-            to={`/admin/courses/${course.courseId}/edit`}
-          />
-          <RowAction
-            title="Delete"
-            icon={<DeleteOutlineIcon fontSize="small" />}
-            color="error"
-            onClick={() => onDelete(course)}
-          />
+          <RowAction label="Editar" to={`/admin/courses/${course.courseId}/edit`} />
+          <RowAction label="Eliminar" color="error" onClick={() => onDelete(course)} />
         </RowActions>
       </TableCell>
     </TableRow>

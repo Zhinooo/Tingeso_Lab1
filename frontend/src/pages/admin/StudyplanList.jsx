@@ -45,9 +45,9 @@ function StudyplanList() {
   return (
     <>
       <PageHeader
-        title="Study plans"
-        subtitle="Each career can have several plans; only one is current."
-        action={<NewButton to="/admin/studyplans/new">New study plan</NewButton>}
+        title="Planes de estudio"
+        subtitle="Cada carrera puede tener varios planes; solo uno está vigente."
+        action={<NewButton to="/admin/studyplans/new">Nuevo plan de estudio</NewButton>}
       />
       <ErrorAlert message={error} onClose={() => setError('')} />
       <StudyplanTable
@@ -58,8 +58,8 @@ function StudyplanList() {
       />
       <ConfirmDialog
         open={Boolean(toDelete)}
-        title="Delete study plan?"
-        message={toDelete && `"${toDelete.studyplanIdentifier}" will be permanently deleted.`}
+        title="¿Eliminar plan de estudio?"
+        message={toDelete && `"${toDelete.studyplanIdentifier}" se eliminará de forma permanente.`}
         onConfirm={handleDelete}
         onClose={() => setToDelete(null)}
       />

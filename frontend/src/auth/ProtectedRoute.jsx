@@ -13,7 +13,7 @@ function ProtectedRoute({ roles }) {
   const missingTeacherRecord = roles.includes('TEACHER') && me.teacherId == null
 
   if (missingStudentRecord || missingTeacherRecord) {
-    return <Alert severity="warning">Your account has no linked record. Please contact the administrator.</Alert>
+    return <Alert severity="warning">Tu cuenta no tiene un registro asociado. Contacta al administrador.</Alert>
   }
 
   return <Outlet />

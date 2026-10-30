@@ -14,12 +14,12 @@ function TeacherFormFields({ form, isEdit, onChange }) {
           required
           fullWidth
           disabled={isEdit}
-          helperText={isEdit ? 'The RUN cannot be changed' : RUN_HELPER_TEXT}
+          helperText={isEdit ? 'El RUN no se puede cambiar' : RUN_HELPER_TEXT}
         />
       </Grid>
       <Grid size={6}>
         <TextField
-          label="Full name"
+          label="Nombre completo"
           name="teacherFullname"
           value={form.teacherFullname}
           onChange={onChange}
@@ -31,7 +31,7 @@ function TeacherFormFields({ form, isEdit, onChange }) {
       <Grid size={6}>
         <TextField
           type="email"
-          label="Email"
+          label="Correo"
           name="teacherEmail"
           value={form.teacherEmail}
           onChange={onChange}
@@ -41,7 +41,7 @@ function TeacherFormFields({ form, isEdit, onChange }) {
       </Grid>
       <Grid size={6}>
         <TextField
-          label="Professional title"
+          label="Título profesional"
           name="teacherProtitle"
           value={form.teacherProtitle}
           onChange={onChange}
@@ -51,7 +51,7 @@ function TeacherFormFields({ form, isEdit, onChange }) {
       </Grid>
       <Grid size={6}>
         <TextField
-          label="Academic degree"
+          label="Grado académico"
           name="teacherDegree"
           value={form.teacherDegree}
           onChange={onChange}
@@ -63,13 +63,13 @@ function TeacherFormFields({ form, isEdit, onChange }) {
         <Grid size={6}>
           <TextField
             type="password"
-            label="Temporary password"
+            label="Contraseña temporal"
             name="password"
             value={form.password}
             onChange={onChange}
             required
             fullWidth
-            helperText={`At least ${MIN_PASSWORD_LENGTH} characters. The teacher will change it on first login.`}
+            helperText={`Mínimo ${MIN_PASSWORD_LENGTH} caracteres. El docente la cambiará al iniciar sesión por primera vez.`}
           />
         </Grid>
       )}

@@ -2,11 +2,11 @@ import DataTable from '../DataTable'
 import TuitionRow from './TuitionRow'
 
 const COLUMNS = [
-  { label: 'Student RUN' },
-  { label: 'Student' },
-  { label: 'Period' },
-  { label: 'Date' },
-  { label: 'Actions', align: 'right' },
+  { label: 'RUN estudiante' },
+  { label: 'Estudiante' },
+  { label: 'Período' },
+  { label: 'Fecha' },
+  { label: 'Acciones', align: 'right' },
 ]
 
 function TuitionTable({ tuitions, studentNames, loading, emptyHint, onDelete }) {
@@ -15,7 +15,7 @@ function TuitionTable({ tuitions, studentNames, loading, emptyHint, onDelete }) 
       columns={COLUMNS}
       rowCount={tuitions.length}
       loading={loading}
-      emptyMessage="No tuitions yet"
+      emptyMessage="Aún no hay matrículas"
       emptyHint={emptyHint}
     >
       {tuitions.map((tuition) => (

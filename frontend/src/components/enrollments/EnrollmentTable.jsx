@@ -2,13 +2,13 @@ import DataTable from '../DataTable'
 import EnrollmentRow from './EnrollmentRow'
 
 const COLUMNS = [
-  { label: 'Student RUN' },
-  { label: 'Period' },
-  { label: 'Code' },
-  { label: 'Course' },
-  { label: 'Date' },
-  { label: 'Grade', align: 'center' },
-  { label: 'Result' },
+  { label: 'RUN estudiante' },
+  { label: 'Período' },
+  { label: 'Código' },
+  { label: 'Ramo' },
+  { label: 'Fecha' },
+  { label: 'Nota', align: 'center' },
+  { label: 'Resultado' },
 ]
 
 function EnrollmentTable({ enrollments, loading }) {
@@ -17,8 +17,8 @@ function EnrollmentTable({ enrollments, loading }) {
       columns={COLUMNS}
       rowCount={enrollments.length}
       loading={loading}
-      emptyMessage="No enrollments yet"
-      emptyHint="Students enroll in courses from their own portal."
+      emptyMessage="Aún no hay inscripciones"
+      emptyHint="Los estudiantes inscriben sus ramos desde su propio portal."
     >
       {enrollments.map((enrollment) => (
         <EnrollmentRow key={enrollment.enrollmentId} enrollment={enrollment} />

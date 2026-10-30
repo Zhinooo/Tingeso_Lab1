@@ -2,14 +2,14 @@ import MenuItem from '@mui/material/MenuItem'
 import TextField from '@mui/material/TextField'
 import { formatPeriod } from '../utils/periods'
 
-function PeriodFilter({ periods, value, onChange, allLabel = 'All periods' }) {
+function PeriodFilter({ periods, value, onChange, allLabel = 'Todos los períodos' }) {
   const isLoaded = periods.some((period) => String(period.academicPeriodId) === value)
 
   return (
     <TextField
       select
       size="small"
-      label="Academic period"
+      label="Período académico"
       value={isLoaded ? value : ''}
       onChange={(event) => onChange(event.target.value)}
       sx={{ minWidth: 220 }}
@@ -17,7 +17,7 @@ function PeriodFilter({ periods, value, onChange, allLabel = 'All periods' }) {
       {allLabel && <MenuItem value="">{allLabel}</MenuItem>}
       {periods.map((period) => (
         <MenuItem key={period.academicPeriodId} value={String(period.academicPeriodId)}>
-          {formatPeriod(period)} · {period.academicPeriodStatus === 'OPEN' ? 'Open' : 'Closed'}
+          {formatPeriod(period)} · {period.academicPeriodStatus === 'OPEN' ? 'Abierto' : 'Cerrado'}
         </MenuItem>
       ))}
     </TextField>

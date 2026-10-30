@@ -23,7 +23,7 @@ function MyHistory() {
 
   return (
     <>
-      <PageHeader title="Academic history" subtitle="Your final grades from closed periods." />
+      <PageHeader title="Historial académico" subtitle="Tus notas finales de los períodos cerrados." />
       <ErrorAlert message={error} />
       <HistoryView student={student} history={history} loading={loading} />
     </>

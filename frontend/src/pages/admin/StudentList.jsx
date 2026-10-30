@@ -45,9 +45,9 @@ function StudentList() {
   return (
     <>
       <PageHeader
-        title="Students"
-        subtitle="Student records, career and academic status."
-        action={<NewButton to="/admin/students/new">New student</NewButton>}
+        title="Estudiantes"
+        subtitle="Registro de estudiantes, su carrera y estado académico."
+        action={<NewButton to="/admin/students/new">Nuevo estudiante</NewButton>}
       />
       <ErrorAlert message={error} onClose={() => setError('')} />
       <StudentTable
@@ -58,8 +58,8 @@ function StudentList() {
       />
       <ConfirmDialog
         open={Boolean(toDelete)}
-        title="Delete student?"
-        message={toDelete && `${toDelete.studentFullname} will be permanently deleted, including their login account.`}
+        title="¿Eliminar estudiante?"
+        message={toDelete && `${toDelete.studentFullname} se eliminará de forma permanente, junto con su cuenta de acceso.`}
         onConfirm={handleDelete}
         onClose={() => setToDelete(null)}
       />

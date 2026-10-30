@@ -73,10 +73,10 @@ function EnrollCourses() {
 
   return (
     <>
-      <PageHeader title="Enroll courses" subtitle="Choose an open period and pick the courses you will take." />
+      <PageHeader title="Inscribir ramos" subtitle="Elige un período abierto y los ramos que vas a tomar." />
       <ErrorAlert message={error} onClose={() => setError('')} />
       {!loading && !hasOpenPeriods ? (
-        <Alert severity="info">There are no open academic periods right now.</Alert>
+        <Alert severity="info">No hay períodos académicos abiertos en este momento.</Alert>
       ) : (
         <>
           <Box sx={{ mb: 2 }}>

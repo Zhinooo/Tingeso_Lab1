@@ -1,7 +1,7 @@
 import DataTable from '../DataTable'
 import StudyplanRow from './StudyplanRow'
 
-const COLUMNS = [{ label: 'Identifier' }, { label: 'Career' }, { label: 'Status' }, { label: 'Actions', align: 'right' }]
+const COLUMNS = [{ label: 'Identificador' }, { label: 'Carrera' }, { label: 'Estado' }, { label: 'Acciones', align: 'right' }]
 
 function StudyplanTable({ studyplans, loading, onToggleStatus, onDelete }) {
   return (
@@ -9,8 +9,8 @@ function StudyplanTable({ studyplans, loading, onToggleStatus, onDelete }) {
       columns={COLUMNS}
       rowCount={studyplans.length}
       loading={loading}
-      emptyMessage="No study plans yet"
-      emptyHint="Create a study plan for a career to start adding courses."
+      emptyMessage="Aún no hay planes de estudio"
+      emptyHint="Crea un plan de estudio para una carrera y luego agrega sus ramos."
     >
       {studyplans.map((studyplan) => (
         <StudyplanRow

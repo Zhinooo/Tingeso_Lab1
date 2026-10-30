@@ -5,7 +5,7 @@ import Paper from '@mui/material/Paper'
 import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
 
-function FormCard({ title, description, onSubmit, cancelTo, submitLabel = 'Save', saving, children }) {
+function FormCard({ title, description, onSubmit, cancelTo, submitLabel = 'Guardar', saving, children }) {
   return (
     <Paper component="form" onSubmit={onSubmit} noValidate sx={{ p: 4 }}>
       {title && (
@@ -23,7 +23,7 @@ function FormCard({ title, description, onSubmit, cancelTo, submitLabel = 'Save'
       <Stack direction="row" spacing={1.5} sx={{ justifyContent: 'flex-end' }}>
         {cancelTo && (
           <Button component={RouterLink} to={cancelTo} color="inherit">
-            Cancel
+           Cancelar
           </Button>
         )}
         <Button type="submit" variant="contained" disabled={saving}>

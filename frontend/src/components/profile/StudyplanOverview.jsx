@@ -7,7 +7,7 @@ function StudyplanOverview({ courses }) {
   return (
     <>
       <Typography variant="h6" sx={{ mb: 2 }}>
-        Study plan
+       Plan de estudio
       </Typography>
       <Grid container spacing={2}>
         {SEMESTERS.map((semester) => (

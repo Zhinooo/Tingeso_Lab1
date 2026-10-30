@@ -19,7 +19,12 @@ function blockCountColor(selected, required) {
   return selected > required ? 'error' : 'warning'
 }
 
-function ScheduleGrid({ selected, required, onToggle }) {
+function cellColor(checked, occupiedBy) {
+  if (occupiedBy) return checked ? 'error.light' : 'action.disabledBackground'
+  return checked ? 'action.selected' : undefined
+}
+
+function ScheduleGrid({ selected, occupied, required, onToggle }) {
   const requiredLabel = required === null ? '-' : required
 
   return (
@@ -27,14 +32,17 @@ function ScheduleGrid({ selected, required, onToggle }) {
       <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Box>
           <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-            Weekly schedule
+           Horario semanal
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Required blocks = course TEL hours / 2
+            Bloques requeridos = horas TEL del ramo / 2, redondeado hacia arriba
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Los bloques grises ya los usa este docente u otro ramo del mismo semestre
           </Typography>
         </Box>
         <Chip
-          label={`${selected.length} selected of ${requiredLabel} required`}
+          label={`${selected.length} seleccionados de ${requiredLabel} requeridos`}
           color={blockCountColor(selected.length, required)}
         />
       </Stack>
@@ -42,7 +50,7 @@ function ScheduleGrid({ selected, required, onToggle }) {
         <Table size="small" sx={{ '& td, & th': { textAlign: 'center' } }}>
           <TableHead>
             <TableRow>
-              <TableCell sx={{ textAlign: 'left !important' }}>Module</TableCell>
+              <TableCell sx={{ textAlign: 'left !important' }}>Módulo</TableCell>
               {DAYS.map((day) => (
                 <TableCell key={day.key}>
                   {day.key}
@@ -74,14 +82,21 @@ function ScheduleGrid({ selected, required, onToggle }) {
                 {DAYS.map((day) => {
                   const block = `${day.key}${module.number}`
                   const checked = selected.includes(block)
+                  const occupiedBy = occupied[block]
 
                   return (
-                    <TableCell key={block} sx={{ bgcolor: checked ? 'action.selected' : undefined }}>
+                    <TableCell key={block} sx={{ bgcolor: cellColor(checked, occupiedBy) }}>
                       <Checkbox
                         checked={checked}
                         onChange={() => onToggle(block)}
+                        disabled={Boolean(occupiedBy) && !checked}
                         slotProps={{ input: { 'aria-label': block } }}
                       />
+                      {occupiedBy && (
+                        <Typography component="div" variant="caption" color="text.secondary">
+                          {occupiedBy}
+                        </Typography>
+                      )}
                     </TableCell>
                   )
                 })}

@@ -22,7 +22,7 @@ function SidebarBrand() {
       <Box>
         <Typography sx={{ color: 'common.white', fontWeight: 700, lineHeight: 1.1 }}>SIGA IPT</Typography>
         <Typography variant="caption" sx={{ color: 'sidebar.muted' }}>
-          Academic management
+          Gestión académica
         </Typography>
       </Box>
     </Toolbar>

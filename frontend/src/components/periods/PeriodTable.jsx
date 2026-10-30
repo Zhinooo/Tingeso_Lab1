@@ -2,7 +2,7 @@ import { comparePeriodsDesc } from '../../utils/periods'
 import DataTable from '../DataTable'
 import PeriodRow from './PeriodRow'
 
-const COLUMNS = [{ label: 'Period' }, { label: 'Status' }, { label: 'Actions', align: 'right' }]
+const COLUMNS = [{ label: 'Período' }, { label: 'Estado' }, { label: 'Acciones', align: 'right' }]
 
 function PeriodTable({ periods, loading, onClosePeriod, onDelete }) {
   const sortedPeriods = [...periods].sort(comparePeriodsDesc)
@@ -12,8 +12,8 @@ function PeriodTable({ periods, loading, onClosePeriod, onDelete }) {
       columns={COLUMNS}
       rowCount={periods.length}
       loading={loading}
-      emptyMessage="No academic periods yet"
-      emptyHint="Create a period to start offering sections."
+      emptyMessage="Aún no hay períodos académicos"
+      emptyHint="Crea un período para empezar a ofrecer secciones."
     >
       {sortedPeriods.map((period) => (
         <PeriodRow

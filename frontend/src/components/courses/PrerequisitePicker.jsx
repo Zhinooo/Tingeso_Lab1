@@ -18,12 +18,12 @@ function PrerequisitePicker({ options, selected, hasStudyplan, onToggle }) {
         </Typography>
         <Chip
           size="small"
-          label={`${selected.length} of ${MAX_PREREQUISITES} max`}
+          label={`${selected.length} de ${MAX_PREREQUISITES} máx.`}
           color={isFull ? 'warning' : 'default'}
         />
       </Stack>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-        Only courses from earlier semesters of the same plan can be prerequisites.
+        Solo los ramos de semestres anteriores del mismo plan pueden ser prerrequisitos.
       </Typography>
       {options.length === 0 ? (
         <Box
@@ -36,7 +36,7 @@ function PrerequisitePicker({ options, selected, hasStudyplan, onToggle }) {
             fontSize: 14,
           }}
         >
-          {hasStudyplan ? 'No earlier-semester courses available.' : 'Select a study plan first.'}
+          {hasStudyplan ? 'No hay ramos de semestres anteriores.' : 'Primero elige un plan de estudio.'}
         </Box>
       ) : (
         <Grid container spacing={0.5}>

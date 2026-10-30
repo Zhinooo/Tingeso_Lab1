@@ -379,7 +379,34 @@ class EnrollmentServiceTest {
         sectionOf("A1").setScheduleBlocks(new ArrayList<>(List.of(new SectionEntity.ScheduleBlock(ScheduleDay.M, 1))));
 
         assertThatThrownBy(() -> service.create(1L, request(1L, 2L, 3L)))
-                .isInstanceOf(IllegalStateException.class).hasMessageContaining("Schedule conflict");
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Schedule conflict in block M1 between A1 and A2.");
+    }
+
+    @Test
+    void createAsksToKeepTheLowerSemesterCourseWhenSemestersConflict(){
+        givenApprovedInClosedPeriod("A1");
+        sections.removeIf(s -> List.of("A5", "A6", "A7").contains(s.getCourse().getCourseCode()));
+        sectionOf("B1").setScheduleBlocks(new ArrayList<>(List.of(new SectionEntity.ScheduleBlock(ScheduleDay.V, 3))));
+        sectionOf("A2").setScheduleBlocks(new ArrayList<>(List.of(new SectionEntity.ScheduleBlock(ScheduleDay.V, 3))));
+
+        assertThatThrownBy(() -> service.create(1L, request(8L, 2L, 3L, 4L)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Schedule conflict in block V3 between B1 (semester 2) and A2 (semester 1). "
+                        + "Keep A2, the lower semester course, and remove B1.");
+    }
+
+    @Test
+    void createAsksToKeepTheLowerSemesterCourseWhenItComesSecond(){
+        givenApprovedInClosedPeriod("A1");
+        sections.removeIf(s -> List.of("A5", "A6", "A7").contains(s.getCourse().getCourseCode()));
+        sectionOf("B1").setScheduleBlocks(new ArrayList<>(List.of(new SectionEntity.ScheduleBlock(ScheduleDay.V, 3))));
+        sectionOf("A2").setScheduleBlocks(new ArrayList<>(List.of(new SectionEntity.ScheduleBlock(ScheduleDay.V, 3))));
+
+        assertThatThrownBy(() -> service.create(1L, request(2L, 8L, 3L, 4L)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Schedule conflict in block V3 between A2 (semester 1) and B1 (semester 2). "
+                        + "Keep A2, the lower semester course, and remove B1.");
     }
 
     @Test

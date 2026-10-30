@@ -1,9 +1,6 @@
 import TableCell from '@mui/material/TableCell'
 import TableRow from '@mui/material/TableRow'
 import Typography from '@mui/material/Typography'
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlineOutlined'
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
-import HistoryEduOutlinedIcon from '@mui/icons-material/HistoryEduOutlined'
 import RowAction from '../RowAction'
 import RowActions from '../RowActions'
 import StudentStatusSelect from './StudentStatusSelect'
@@ -28,23 +25,9 @@ function StudentRow({ student, onStatusChange, onDelete }) {
       </TableCell>
       <TableCell align="right">
         <RowActions>
-          <RowAction
-            title="History"
-            icon={<HistoryEduOutlinedIcon fontSize="small" />}
-            color="primary"
-            to={`/admin/students/${student.studentId}/history`}
-          />
-          <RowAction
-            title="Edit"
-            icon={<EditOutlinedIcon fontSize="small" />}
-            to={`/admin/students/${student.studentId}/edit`}
-          />
-          <RowAction
-            title="Delete"
-            icon={<DeleteOutlineIcon fontSize="small" />}
-            color="error"
-            onClick={() => onDelete(student)}
-          />
+          <RowAction label="Historial" color="primary" to={`/admin/students/${student.studentId}/history`} />
+          <RowAction label="Editar" to={`/admin/students/${student.studentId}/edit`} />
+          <RowAction label="Eliminar" color="error" onClick={() => onDelete(student)} />
         </RowActions>
       </TableCell>
     </TableRow>

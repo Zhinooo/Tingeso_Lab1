@@ -13,16 +13,16 @@ function StudentCareerChangeCard({ careerForm, careers, studyplans, error, savin
 
   return (
     <Paper component="form" onSubmit={onSubmit} noValidate sx={{ p: 4, mt: 3 }}>
-      <Typography variant="h6">Change career and study plan</Typography>
+      <Typography variant="h6">Cambiar carrera y plan de estudio</Typography>
       <Alert severity="warning" sx={{ my: 2 }}>
-        Only allowed while the student has no enrollments or academic history.
+        Solo se permite mientras el estudiante no tenga inscripciones ni historial académico.
       </Alert>
       <ErrorAlert message={error} />
       <Grid container spacing={2.5}>
         <Grid size={6}>
           <TextField
             select
-            label="Career"
+            label="Carrera"
             name="careerCode"
             value={careerForm.careerCode}
             onChange={onChange}
@@ -38,17 +38,17 @@ function StudentCareerChangeCard({ careerForm, careers, studyplans, error, savin
         <Grid size={6}>
           <TextField
             select
-            label="Study plan"
+            label="Plan de estudio"
             name="studyplanIdentifier"
             value={careerForm.studyplanIdentifier}
             onChange={onChange}
             fullWidth
           >
-            <MenuItem value="">Current plan of the career</MenuItem>
+            <MenuItem value="">Plan vigente de la carrera</MenuItem>
             {careerStudyplans.map((studyplan) => (
               <MenuItem key={studyplan.studyplanId} value={studyplan.studyplanIdentifier}>
                 {studyplan.studyplanIdentifier}
-                {studyplan.studyplanStatus === 'CURRENT' ? ' (current)' : ''}
+                {studyplan.studyplanStatus === 'CURRENT' ? ' (vigente)' : ''}
               </MenuItem>
             ))}
           </TextField>
@@ -56,7 +56,7 @@ function StudentCareerChangeCard({ careerForm, careers, studyplans, error, savin
       </Grid>
       <Stack direction="row" sx={{ justifyContent: 'flex-end', mt: 3 }}>
         <Button type="submit" variant="outlined" color="warning" disabled={saving}>
-          Change career
+         Cambiar carrera
         </Button>
       </Stack>
     </Paper>

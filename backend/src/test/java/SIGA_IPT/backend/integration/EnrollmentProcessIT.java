@@ -90,10 +90,12 @@ class EnrollmentProcessIT extends IntegrationTestBase {
     }
 
     @Test
-    void rejectedWhenSchedulesCollide() throws Exception {
+    void rejectedWhenSchedulesOfDifferentSemestersCollide() throws Exception {
         World world = newWorld();
-        Long first = newCourse(world, "A" + next(), 1);
-        Long second = newCourse(world, "B" + next(), 1);
+        String firstCode = "A" + next();
+        String secondCode = "B" + next();
+        Long first = newCourse(world, firstCode, 1);
+        Long second = newCourse(world, secondCode, 2);
         Long third = newCourse(world, "C" + next(), 1);
         newSection(world, first, newTeacher(), 30, "L", 1, "W", 1);
         newSection(world, second, newTeacher(), 30, "L", 1, "J", 2);
@@ -103,8 +105,24 @@ class EnrollmentProcessIT extends IntegrationTestBase {
 
         enroll(student, world, first, second, third)
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("Schedule conflict")));
+                .andExpect(jsonPath("$.message").value("Schedule conflict in block L1 between " + firstCode + " (semester 1) and "
+                        + secondCode + " (semester 2). Keep " + firstCode + ", the lower semester course, and remove " + secondCode + "."));
         httpGet("/api/enrollments/me", student.token()).andExpect(jsonPath("$", hasSize(0)));
+    }
+
+    @Test
+    void sectionsOfTheSameSemesterCannotShareABlock() throws Exception {
+        World world = newWorld();
+        String firstCode = "A" + next();
+        Long first = newCourse(world, firstCode, 1);
+        Long second = newCourse(world, "B" + next(), 1);
+        newSection(world, first, newTeacher(), 30, "L", 1, "W", 1);
+
+        httpPost("/api/sections", asAdmin(),
+                "{\"courseId\":" + second + ",\"academicPeriodId\":" + world.periodId() + ",\"teacherId\":" + newTeacher().id()
+                        + ",\"sectionCapacity\":30,\"scheduleBlocks\":[{\"scheduleDay\":\"L\",\"module\":1},{\"scheduleDay\":\"J\",\"module\":2}]}")
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message").value("Schedule conflict: block L1 is already used by " + firstCode + ", a course of the same semester."));
     }
 
     @Test

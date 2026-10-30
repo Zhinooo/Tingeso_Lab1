@@ -1,20 +1,20 @@
+import Paper from '@mui/material/Paper'
+import Typography from '@mui/material/Typography'
 import useAuth from '../auth/useAuth'
-import { NAV, ROLE_LABEL } from '../components/Layout/navConfig'
-import QuickLinkGroup from '../components/home/QuickLinkGroup'
-import WelcomeBanner from '../components/home/WelcomeBanner'
+import { formatRoles } from '../constants/roles'
 
 function HomePage() {
-  const { me, hasRole } = useAuth()
-  const groups = NAV.filter((entry) => hasRole(entry.role)).flatMap((entry) => entry.groups)
-  const roleLabel = me.roles.map((role) => ROLE_LABEL[role] || role).join(', ')
+  const { me } = useAuth()
 
   return (
-    <>
-      <WelcomeBanner fullName={me.fullName} username={me.username} roleLabel={roleLabel} />
-      {groups.map((group) => (
-        <QuickLinkGroup key={group.title} title={group.title} items={group.items} />
-      ))}
-    </>
+    <Paper sx={{ p: 4 }}>
+      <Typography variant="h4" component="h1" gutterBottom>
+        Bienvenido/a, {me.fullName}
+      </Typography>
+      <Typography color="text.secondary">
+        Ingresaste como {formatRoles(me.roles)}. Usa el menú de la izquierda para comenzar.
+      </Typography>
+    </Paper>
   )
 }
 

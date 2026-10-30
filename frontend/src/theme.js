@@ -13,6 +13,17 @@ const theme = createTheme({
       divider: 'rgba(255, 255, 255, 0.08)',
     },
   },
+  components: {
+    MuiCssBaseline: {
+      styleOverrides: {
+        'input[type=number]': { MozAppearance: 'textfield' },
+        'input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner-spin-button': {
+          WebkitAppearance: 'none',
+          margin: 0,
+        },
+      },
+    },
+  },
 })
 
 export default theme

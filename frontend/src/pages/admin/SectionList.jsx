@@ -59,9 +59,9 @@ function SectionList() {
   return (
     <>
       <PageHeader
-        title="Sections"
-        subtitle="Course offerings per period, with teacher and weekly schedule."
-        action={<NewButton to={newSectionUrl}>New section</NewButton>}
+        title="Secciones"
+        subtitle="Ramos dictados en cada período, con su docente y horario semanal."
+        action={<NewButton to={newSectionUrl}>Nueva sección</NewButton>}
       />
       <Box sx={{ mb: 2 }}>
         <PeriodFilter periods={periods} value={academicPeriodId} onChange={handlePeriodChange} />
@@ -70,13 +70,13 @@ function SectionList() {
       <SectionTable
         sections={sections}
         loading={loading}
-        emptyHint={academicPeriodId ? 'This period has no sections yet.' : 'Create an open period first, then add sections.'}
+        emptyHint={academicPeriodId ? 'Este período aún no tiene secciones.' : 'Primero crea un período abierto y luego agrega secciones.'}
         onDelete={setToDelete}
       />
       <ConfirmDialog
         open={Boolean(toDelete)}
-        title="Delete section?"
-        message={toDelete && `Section ${toDelete.courseCode} (${formatPeriod(toDelete)}) will be permanently deleted.`}
+        title="¿Eliminar sección?"
+        message={toDelete && `La sección ${toDelete.courseCode} (${formatPeriod(toDelete)}) se eliminará de forma permanente.`}
         onConfirm={handleDelete}
         onClose={() => setToDelete(null)}
       />

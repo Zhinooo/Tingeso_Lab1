@@ -47,7 +47,7 @@ function AddEditCareer() {
 
   return (
     <>
-      <PageHeader title={isEdit ? 'Edit career' : 'New career'} backTo="/admin/careers" />
+      <PageHeader title={isEdit ? 'Editar carrera' : 'Nueva carrera'} backTo="/admin/careers" />
       <ErrorAlert message={error} />
       <FormCard onSubmit={handleSubmit} cancelTo="/admin/careers" saving={saving}>
         <CareerFormFields form={form} onChange={handleChange} />

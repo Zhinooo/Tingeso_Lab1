@@ -9,7 +9,7 @@ function ConfirmDialog({
   open,
   title,
   message,
-  confirmLabel = 'Delete',
+  confirmLabel = 'Eliminar',
   destructive = true,
   onConfirm,
   onClose,
@@ -22,7 +22,7 @@ function ConfirmDialog({
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
         <Button onClick={onClose} color="inherit">
-          Cancel
+         Cancelar
         </Button>
         <Button onClick={onConfirm} variant="contained" color={destructive ? 'error' : 'primary'}>
           {confirmLabel}

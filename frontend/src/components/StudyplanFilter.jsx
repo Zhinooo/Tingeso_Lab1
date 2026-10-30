@@ -1,14 +1,14 @@
 import MenuItem from '@mui/material/MenuItem'
 import TextField from '@mui/material/TextField'
 
-function StudyplanFilter({ studyplans, value, onChange, allLabel = 'All study plans' }) {
+function StudyplanFilter({ studyplans, value, onChange, allLabel = 'Todos los planes' }) {
   const isLoaded = studyplans.some((studyplan) => String(studyplan.studyplanId) === value)
 
   return (
     <TextField
       select
       size="small"
-      label="Study plan"
+      label="Plan de estudio"
       value={isLoaded ? value : ''}
       onChange={(event) => onChange(event.target.value)}
       sx={{ minWidth: 240 }}

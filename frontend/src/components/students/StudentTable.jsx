@@ -3,12 +3,12 @@ import StudentRow from './StudentRow'
 
 const COLUMNS = [
   { label: 'RUN' },
-  { label: 'Full name' },
-  { label: 'Email' },
-  { label: 'Career' },
-  { label: 'Study plan' },
-  { label: 'Status' },
-  { label: 'Actions', align: 'right' },
+  { label: 'Nombre completo' },
+  { label: 'Correo' },
+  { label: 'Carrera' },
+  { label: 'Plan de estudio' },
+  { label: 'Estado' },
+  { label: 'Acciones', align: 'right' },
 ]
 
 function StudentTable({ students, loading, onStatusChange, onDelete }) {
@@ -17,8 +17,8 @@ function StudentTable({ students, loading, onStatusChange, onDelete }) {
       columns={COLUMNS}
       rowCount={students.length}
       loading={loading}
-      emptyMessage="No students yet"
-      emptyHint="Students are assigned to the current study plan of their career."
+      emptyMessage="Aún no hay estudiantes"
+      emptyHint="Los estudiantes quedan en el plan vigente de su carrera."
     >
       {students.map((student) => (
         <StudentRow

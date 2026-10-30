@@ -9,14 +9,14 @@ function CourseFormFields({ form, studyplans, isEdit, onChange }) {
       <Grid size={6}>
         <TextField
           select
-          label="Study plan"
+          label="Plan de estudio"
           name="studyplanId"
           value={form.studyplanId}
           onChange={onChange}
           required
           fullWidth
           disabled={isEdit}
-          helperText={isEdit ? 'The study plan cannot be changed' : ' '}
+          helperText={isEdit ? 'El plan de estudio no se puede cambiar' : ' '}
         >
           {studyplans.map((studyplan) => (
             <MenuItem key={studyplan.studyplanId} value={String(studyplan.studyplanId)}>
@@ -28,7 +28,7 @@ function CourseFormFields({ form, studyplans, isEdit, onChange }) {
       <Grid size={6}>
         <TextField
           select
-          label="Semester"
+          label="Semestre"
           name="semester"
           value={form.semester}
           onChange={onChange}
@@ -38,14 +38,14 @@ function CourseFormFields({ form, studyplans, isEdit, onChange }) {
         >
           {SEMESTERS.map((semester) => (
             <MenuItem key={semester} value={semester}>
-              Semester {semester}
+             Semestre {semester}
             </MenuItem>
           ))}
         </TextField>
       </Grid>
       <Grid size={4}>
         <TextField
-          label="Course code"
+          label="Código del ramo"
           name="courseCode"
           value={form.courseCode}
           onChange={onChange}
@@ -55,7 +55,7 @@ function CourseFormFields({ form, studyplans, isEdit, onChange }) {
       </Grid>
       <Grid size={8}>
         <TextField
-          label="Course name"
+          label="Nombre del ramo"
           name="courseName"
           value={form.courseName}
           onChange={onChange}

@@ -2,9 +2,9 @@ import DataTable from '../DataTable'
 import GradeRow from './GradeRow'
 
 const COLUMNS = [
-  { label: 'Student RUN' },
-  { label: 'Final grade' },
-  { label: 'Result' },
+  { label: 'RUN estudiante' },
+  { label: 'Nota final' },
+  { label: 'Resultado' },
   { label: '', align: 'right' },
 ]
 
@@ -14,7 +14,7 @@ function GradeTable({ enrollments, grades, loading, readOnly, savingId, onChange
       columns={COLUMNS}
       rowCount={enrollments.length}
       loading={loading}
-      emptyMessage="No students enrolled yet"
+      emptyMessage="Aún no hay estudiantes inscritos"
     >
       {enrollments.map((enrollment) => (
         <GradeRow
