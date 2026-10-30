@@ -6,7 +6,7 @@ import RowAction from '../RowAction'
 import RowActions from '../RowActions'
 import ScheduleChips from '../ScheduleChips'
 
-function SectionRow({ section, onDelete }) {
+function SectionRow({ section, isClosed, onDelete }) {
   return (
     <TableRow hover>
       <TableCell sx={{ whiteSpace: 'nowrap' }}>{formatPeriod(section)}</TableCell>
@@ -24,10 +24,12 @@ function SectionRow({ section, onDelete }) {
         <ScheduleChips blocks={section.scheduleBlocks} />
       </TableCell>
       <TableCell align="right">
-        <RowActions>
-          <RowAction label="Editar" to={`/admin/sections/${section.sectionId}/edit`} />
-          <RowAction label="Eliminar" color="error" onClick={() => onDelete(section)} />
-        </RowActions>
+        {!isClosed && (
+          <RowActions>
+            <RowAction label="Editar" to={`/admin/sections/${section.sectionId}/edit`} />
+            <RowAction label="Eliminar" color="error" onClick={() => onDelete(section)} />
+          </RowActions>
+        )}
       </TableCell>
     </TableRow>
   )

@@ -16,10 +16,6 @@ const getByAcademicPeriod = (academicPeriodId) => {
   return httpClient.get(`/api/sections/academic-period/${academicPeriodId}`)
 }
 
-const getByTeacher = (teacherId) => {
-  return httpClient.get(`/api/sections/teacher/${teacherId}`)
-}
-
 const create = (data) => {
   return httpClient.post('/api/sections', data)
 }
@@ -32,4 +28,4 @@ const remove = (id) => {
   return httpClient.delete(`/api/sections/${id}`)
 }
 
-export default { getAll, getMine, get, getByAcademicPeriod, getByTeacher, create, update, remove }
+export default { getAll, getMine, get, getByAcademicPeriod, create, update, remove }

@@ -3,6 +3,10 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .
+ARG VITE_API_URL
+ARG VITE_KEYCLOAK_URL
+ARG VITE_KEYCLOAK_REALM=siga
+ARG VITE_KEYCLOAK_CLIENT_ID=siga-frontend
 RUN npm run build
 
 FROM docker.io/library/nginx:stable-alpine

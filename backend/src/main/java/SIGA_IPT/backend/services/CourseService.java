@@ -62,6 +62,9 @@ public class CourseService {
         if (dto.theoryHours() < 0 || dto.exerciseHours() < 0 || dto.labHours() < 0){
             throw new IllegalArgumentException("Weekly hours cannot be negative.");
         }
+        if (dto.theoryHours() + dto.exerciseHours() + dto.labHours() == 0){
+            throw new IllegalArgumentException("The total weekly hours must be greater than zero.");
+        }
         if (dto.theoryHours() + dto.exerciseHours() + dto.labHours() >= MAX_WEEKLY_HOURS_EXCLUSIVE){
             throw new IllegalArgumentException("The total weekly hours must be less than " + MAX_WEEKLY_HOURS_EXCLUSIVE + ".");
         }

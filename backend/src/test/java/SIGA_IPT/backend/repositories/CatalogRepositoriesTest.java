@@ -161,8 +161,6 @@ class CatalogRepositoriesTest extends MySqlContainerBase {
         assertThat(studentRepository.existsByStudentRun(student.getStudentRun())).isTrue();
         assertThat(studentRepository.existsByStudentRun("none")).isFalse();
         assertThat(studentRepository.existsByStudentEmail(student.getStudentEmail())).isTrue();
-        assertThat(studentRepository.findByStudentEmail(student.getStudentEmail())).get().isEqualTo(student);
-        assertThat(studentRepository.findByStudentEmail("none@test.cl")).isEmpty();
         assertThat(studentRepository.findByKeycloakUserId(student.getKeycloakUserId())).get().isEqualTo(student);
         assertThat(studentRepository.findByKeycloakUserId("none")).isEmpty();
     }
@@ -193,8 +191,6 @@ class CatalogRepositoriesTest extends MySqlContainerBase {
         assertThat(teacherRepository.existsByTeacherRun("none")).isFalse();
         assertThat(teacherRepository.existsByTeacherEmail(teacher.getTeacherEmail())).isTrue();
         assertThat(teacherRepository.existsByTeacherEmail("none@test.cl")).isFalse();
-        assertThat(teacherRepository.findByTeacherEmail(teacher.getTeacherEmail())).get().isEqualTo(teacher);
-        assertThat(teacherRepository.findByTeacherEmail("none@test.cl")).isEmpty();
         assertThat(teacherRepository.findByKeycloakUserId(teacher.getKeycloakUserId())).get().isEqualTo(teacher);
         assertThat(teacherRepository.findByKeycloakUserId("none")).isEmpty();
     }

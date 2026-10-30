@@ -3,6 +3,7 @@ import EnrollmentRow from './EnrollmentRow'
 
 const COLUMNS = [
   { label: 'RUN estudiante' },
+  { label: 'Estudiante' },
   { label: 'Período' },
   { label: 'Código' },
   { label: 'Ramo' },

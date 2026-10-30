@@ -14,7 +14,7 @@ function PrerequisitePicker({ options, selected, hasStudyplan, onToggle }) {
     <>
       <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
         <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-          Prerequisites
+          Prerrequisitos
         </Typography>
         <Chip
           size="small"

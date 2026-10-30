@@ -149,6 +149,17 @@ class CourseServiceTest {
     }
 
     @Test
+    void createRejectsACourseWithoutWeeklyHours(){
+        assertThatThrownBy(() -> service.create(dto("Z", 1, 0, 0, 0, 5, 1L, null)))
+                .isInstanceOf(IllegalArgumentException.class).hasMessage("The total weekly hours must be greater than zero.");
+    }
+
+    @Test
+    void createAcceptsASingleWeeklyHour(){
+        assertThat(service.create(dto("Z", 1, 0, 0, 1, 5, 1L, null)).labHours()).isEqualTo(1);
+    }
+
+    @Test
     void createRejectsWeeklyHoursOfEightOrMore(){
         assertThatThrownBy(() -> service.create(dto("Z", 1, 4, 2, 2, 5, 1L, null)))
                 .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("less than 8");

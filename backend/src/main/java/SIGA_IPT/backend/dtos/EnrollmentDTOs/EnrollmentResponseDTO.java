@@ -8,6 +8,7 @@ public record EnrollmentResponseDTO(
         Long enrollmentId,
         Long studentId,
         String studentRun,
+        String studentFullname,
         Long courseId,
         String courseCode,
         String courseName,

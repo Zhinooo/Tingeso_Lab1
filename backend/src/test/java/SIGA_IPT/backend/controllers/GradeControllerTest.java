@@ -40,7 +40,7 @@ class GradeControllerTest extends ControllerTestBase {
     }
 
     private EnrollmentResponseDTO graded(){
-        return new EnrollmentResponseDTO(1L, 1L, "1-9", 1L, "TPI101", "Programming", 1L, 1L, 2030, 1,
+        return new EnrollmentResponseDTO(1L, 1L, "1-9", "Student One", 1L, "TPI101", "Programming", 1L, 1L, 2030, 1,
                 LocalDate.of(2030, 3, 1), 5.5, EnrollmentEntity.EnrollmentResult.APPROVED);
     }
 
@@ -50,6 +50,7 @@ class GradeControllerTest extends ControllerTestBase {
 
         put("/api/enrollments/1/grade?teacherId=99", teacher(), BODY)
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.studentFullname").value("Student One"))
                 .andExpect(jsonPath("$.result").value("APPROVED"));
         verify(gradeService).registerGrade(eq(1L), eq(7L), any());
     }

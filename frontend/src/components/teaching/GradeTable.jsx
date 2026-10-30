@@ -3,6 +3,7 @@ import GradeRow from './GradeRow'
 
 const COLUMNS = [
   { label: 'RUN estudiante' },
+  { label: 'Estudiante' },
   { label: 'Nota final' },
   { label: 'Resultado' },
   { label: '', align: 'right' },

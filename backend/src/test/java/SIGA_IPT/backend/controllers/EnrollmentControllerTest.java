@@ -44,7 +44,7 @@ class EnrollmentControllerTest extends ControllerTestBase {
     }
 
     private EnrollmentResponseDTO enrollment(){
-        return new EnrollmentResponseDTO(1L, 1L, "1-9", 1L, "TPI101", "Programming", 1L, 1L, 2030, 1,
+        return new EnrollmentResponseDTO(1L, 1L, "1-9", "Student One", 1L, "TPI101", "Programming", 1L, 1L, 2030, 1,
                 LocalDate.of(2030, 3, 1), null, null);
     }
 
@@ -210,7 +210,7 @@ class EnrollmentControllerTest extends ControllerTestBase {
 
     @Test
     void enrollmentResultIsExposedWhenGraded() throws Exception {
-        EnrollmentResponseDTO graded = new EnrollmentResponseDTO(1L, 1L, "1-9", 1L, "TPI101", "Programming", 1L, 1L, 2030, 1,
+        EnrollmentResponseDTO graded = new EnrollmentResponseDTO(1L, 1L, "1-9", "Student One", 1L, "TPI101", "Programming", 1L, 1L, 2030, 1,
                 LocalDate.of(2030, 3, 1), 5.5, EnrollmentEntity.EnrollmentResult.APPROVED);
         when(enrollmentService.getById(1L)).thenReturn(graded);
 

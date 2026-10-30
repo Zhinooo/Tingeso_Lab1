@@ -11,7 +11,7 @@ function selectionColor(count) {
   return count >= MIN_COURSES ? 'success' : 'default'
 }
 
-function EnrollmentSummaryBar({ count, saving, onSubmit }) {
+function EnrollmentSummaryBar({ count, saving, blocked, onSubmit }) {
   return (
     <Paper sx={{ position: 'sticky', bottom: 16, mt: 2, p: 2 }}>
       <Stack direction="row" spacing={2} sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
@@ -25,7 +25,7 @@ function EnrollmentSummaryBar({ count, saving, onSubmit }) {
           variant="contained"
           size="large"
           onClick={onSubmit}
-          disabled={count === 0 || count > MAX_COURSES || saving}
+          disabled={blocked || count === 0 || count > MAX_COURSES || saving}
         >
          Inscribir
         </Button>

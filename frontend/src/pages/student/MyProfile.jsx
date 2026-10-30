@@ -24,6 +24,9 @@ function MyProfile() {
         const studyplan = studyplansResponse.data.find(
           (item) => item.careerCode === me.careerCode && item.studyplanIdentifier === me.studyplanIdentifier,
         )
+        if (!studyplan) {
+          throw new Error('No se encontró tu plan de estudio.')
+        }
         return courseService.getByStudyplan(studyplan.studyplanId)
       })
       .then((response) => setCourses(response.data))

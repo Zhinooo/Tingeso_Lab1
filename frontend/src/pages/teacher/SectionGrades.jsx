@@ -57,7 +57,7 @@ function SectionGrades() {
         setEnrollments((current) =>
           current.map((item) => (item.enrollmentId === enrollment.enrollmentId ? response.data : item)),
         )
-        setSavedMessage(`Nota guardada para ${enrollment.studentRun}`)
+        setSavedMessage(`Nota guardada para ${enrollment.studentFullname}`)
       })
       .catch((err) => setError(err.message))
       .finally(() => setSavingId(null))

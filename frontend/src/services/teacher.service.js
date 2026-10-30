@@ -4,10 +4,6 @@ const getAll = () => {
   return httpClient.get('/api/teachers')
 }
 
-const getMine = () => {
-  return httpClient.get('/api/teachers/me')
-}
-
 const get = (id) => {
   return httpClient.get(`/api/teachers/${id}`)
 }
@@ -28,4 +24,4 @@ const remove = (id) => {
   return httpClient.delete(`/api/teachers/${id}`)
 }
 
-export default { getAll, getMine, get, create, update, changeStatus, remove }
+export default { getAll, get, create, update, changeStatus, remove }

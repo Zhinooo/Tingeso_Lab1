@@ -47,8 +47,8 @@ function CourseWorkloadFields({ form, onChange }) {
         </Grid>
       </Grid>
       <Stack direction="row" spacing={3} sx={{ mt: 2, p: 1.5, borderRadius: 2, bgcolor: 'grey.50' }}>
-        <ValidationRule ok={totalHours < MAX_WEEKLY_HOURS_EXCLUSIVE}>
-          Horas totales: {totalHours} (deben ser menos de {MAX_WEEKLY_HOURS_EXCLUSIVE})
+        <ValidationRule ok={totalHours > 0 && totalHours < MAX_WEEKLY_HOURS_EXCLUSIVE}>
+          Horas totales: {totalHours} (deben ser entre 1 y {MAX_WEEKLY_HOURS_EXCLUSIVE - 1})
         </ValidationRule>
         <ValidationRule ok={sct >= 1 && sct <= MAX_SCT}>SCT entre 1 y {MAX_SCT}</ValidationRule>
       </Stack>

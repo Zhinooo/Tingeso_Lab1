@@ -19,8 +19,6 @@ public interface StudentRepository extends JpaRepository<StudentEntity, Long>{
 
     boolean existsByStudentEmail(String studentEmail);
 
-    Optional<StudentEntity> findByStudentEmail(String studentEmail);
-
     Optional<StudentEntity> findByKeycloakUserId(String keycloakUserId);
 
 }

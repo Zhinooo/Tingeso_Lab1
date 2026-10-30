@@ -9,10 +9,12 @@ import AvailableCourseTable from '../../components/enroll/AvailableCourseTable'
 import EnrollmentSummaryBar from '../../components/enroll/EnrollmentSummaryBar'
 import academicPeriodService from '../../services/academicPeriod.service'
 import enrollmentService from '../../services/enrollment.service'
+import tuitionService from '../../services/tuition.service'
 
 function EnrollCourses() {
   const navigate = useNavigate()
   const [periods, setPeriods] = useState([])
+  const [tuitionPeriodIds, setTuitionPeriodIds] = useState([])
   const [academicPeriodId, setAcademicPeriodId] = useState('')
   const [available, setAvailable] = useState([])
   const [selected, setSelected] = useState([])
@@ -21,11 +23,11 @@ function EnrollCourses() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    academicPeriodService
-      .getAll()
-      .then((response) => {
-        const openPeriods = response.data.filter((period) => period.academicPeriodStatus === 'OPEN')
+    Promise.all([academicPeriodService.getAll(), tuitionService.getMine()])
+      .then(([periodsResponse, tuitionsResponse]) => {
+        const openPeriods = periodsResponse.data.filter((period) => period.academicPeriodStatus === 'OPEN')
         setPeriods(openPeriods)
+        setTuitionPeriodIds(tuitionsResponse.data.map((tuition) => tuition.academicPeriodId))
         if (openPeriods.length > 0) {
           setAcademicPeriodId(String(openPeriods[0].academicPeriodId))
         } else {
@@ -70,6 +72,7 @@ function EnrollCourses() {
   }
 
   const hasOpenPeriods = periods.length > 0
+  const hasTuition = tuitionPeriodIds.includes(Number(academicPeriodId))
 
   return (
     <>
@@ -87,13 +90,23 @@ function EnrollCourses() {
               allLabel={null}
             />
           </Box>
+          {academicPeriodId && !hasTuition && (
+            <Alert severity="warning" sx={{ mb: 2 }}>
+              No tienes matrícula en este período, por lo que no puedes inscribir ramos. Contacta al administrador.
+            </Alert>
+          )}
           <AvailableCourseTable
             courses={available}
             selected={selected}
             loading={loading}
             onToggle={toggleCourse}
           />
-          <EnrollmentSummaryBar count={selected.length} saving={saving} onSubmit={handleSubmit} />
+          <EnrollmentSummaryBar
+            count={selected.length}
+            saving={saving}
+            blocked={!hasTuition}
+            onSubmit={handleSubmit}
+          />
         </>
       )}
     </>

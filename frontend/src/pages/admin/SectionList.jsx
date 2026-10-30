@@ -52,6 +52,10 @@ function SectionList() {
       .catch((err) => setError(err.message))
   }
 
+  const closedPeriodIds = periods
+    .filter((period) => period.academicPeriodStatus === 'CLOSED')
+    .map((period) => period.academicPeriodId)
+
   const newSectionUrl = academicPeriodId
     ? `/admin/sections/new?academicPeriodId=${academicPeriodId}`
     : '/admin/sections/new'
@@ -69,6 +73,7 @@ function SectionList() {
       <ErrorAlert message={error} onClose={() => setError('')} />
       <SectionTable
         sections={sections}
+        closedPeriodIds={closedPeriodIds}
         loading={loading}
         emptyHint={academicPeriodId ? 'Este período aún no tiene secciones.' : 'Primero crea un período abierto y luego agrega secciones.'}
         onDelete={setToDelete}

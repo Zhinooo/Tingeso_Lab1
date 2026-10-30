@@ -1,21 +1,29 @@
 # SIGA IPT
 
-Sistema Integrado de Gestión Académica del Instituto Profesional de Tecnología (IPT). Aplicación web monolítica por capas: backend en Spring Boot, autenticación con Keycloak y base de datos MySQL.
-
-Este README explica cómo levantar el entorno de desarrollo.
+Sistema Integrado de Gestión Académica del Instituto Profesional de Tecnología (IPT). Aplicación web monolítica por capas: frontend en React, backend en Spring Boot, autenticación con Keycloak y base de datos MySQL.
 
 ## Estructura del repositorio
 
-| Carpeta o archivo          | Contenido                                                      |
-| -------------------------- | -------------------------------------------------------------- |
-| `backend/`                 | API REST (Spring Boot, Java 25, Gradle)                        |
-| `keycloak/siga-realm.json` | Realm `siga` de Keycloak: roles, clientes y usuarios de prueba |
-| `docker-compose.yml`       | Levanta MySQL, Keycloak y el backend                           |
-| `Evaluacion1_v1.pdf`       | Enunciado de la evaluación                                     |
+| Carpeta o archivo          | Contenido                                                                 |
+| -------------------------- | ------------------------------------------------------------------------- |
+| `backend/`                 | API REST (Spring Boot, Java 25, Gradle)                                   |
+| `frontend/`                | Interfaz web (React, Vite, Material UI)                                   |
+| `keycloak/siga-realm.json` | Realm `siga` de Keycloak: roles, clientes y usuarios de prueba            |
+| `nginx/nginx.conf`         | Balanceador de producción: reparte `/api` entre las 3 réplicas del backend |
+| `docker-compose.yml`       | Entorno de **desarrollo**: MySQL, Keycloak, backend y frontend            |
+| `docker-compose.prod.yml`  | Entorno de **producción**: lo anterior con 3 réplicas del backend y Nginx |
+| `Evaluacion1_v1.pdf`       | Enunciado de la evaluación                                                |
 
-## Cómo levantar el entorno
+Hay dos formas de correr la aplicación:
 
-Todo corre en contenedores con Docker Compose: **MySQL**, **Keycloak** y el **backend**. Ya no se usa un MySQL instalado en el computador.
+| | Desarrollo | Producción |
+|---|---|---|
+| Archivo | `docker-compose.yml` | `docker-compose.prod.yml` |
+| Para qué | Programar y probar en el computador | El despliegue que pide el enunciado |
+| Backend | 1 instancia | 3 réplicas detrás de Nginx |
+| Acceso | Un puerto por servicio | Una sola entrada: Nginx |
+
+## Entorno de desarrollo
 
 ### Una sola vez: configurar las variables
 
@@ -28,9 +36,8 @@ DB_PSW=<contraseña de ese usuario>
 DB_ROOT_PSW=<contraseña de root de MySQL>
 SIGA_BACKEND_CLIENT_SECRET=siga-backend-dev-secret
 SEED_DATA=true
+COMPOSE_PROFILES=frontend
 ```
-
-Qué significa cada variable:
 
 | Variable | Qué poner |
 |---|---|
@@ -39,6 +46,7 @@ Qué significa cada variable:
 | `DB_ROOT_PSW` | Contraseña del usuario `root` de MySQL |
 | `SIGA_BACKEND_CLIENT_SECRET` | `siga-backend-dev-secret` en desarrollo |
 | `SEED_DATA` | `true` para cargar las carreras, planes y asignaturas del Anexo A |
+| `COMPOSE_PROFILES` | `frontend` para que `docker compose` también levante y detenga el frontend |
 
 ### Cada vez que arranques el computador
 
@@ -56,7 +64,7 @@ Qué significa cada variable:
    docker compose up -d --build
    ```
 
-   La primera vez construye la imagen del backend y tarda unos minutos. Después, `docker compose up -d` basta.
+   La primera vez construye las imágenes del backend y del frontend y tarda unos minutos. Después, `docker compose up -d` basta.
 
 3. Comprueba el estado:
 
@@ -64,12 +72,13 @@ Qué significa cada variable:
    docker compose ps
    ```
 
-   Deben aparecer `siga-db`, `siga-keycloak` y `siga-backend` en estado `Up`.
+   Deben aparecer `siga-db`, `siga-keycloak`, `siga-backend` y `siga-frontend` en estado `Up`.
 
 ### Dónde queda cada cosa
 
 | Servicio | URL desde tu computador | Para qué |
 |---|---|---|
+| Frontend | `http://localhost:5173` | La aplicación |
 | Backend | `http://localhost:8090` | API y Swagger (`/swagger-ui.html`) |
 | Keycloak | `http://localhost:8180` | Login y consola de administración |
 | MySQL | `localhost:3307` | Para conectar un cliente SQL (por ejemplo DBeaver) |
@@ -84,17 +93,40 @@ Los datos persisten en volúmenes de Docker (`db-data` y `keycloak-data`), así 
 | `docker compose down`    | Borra los contenedores, pero **conserva los datos** (volúmenes)                                    |
 | `docker compose down -v` | Borra también los volúmenes: la base de datos y los usuarios de Keycloak vuelven a empezar de cero |
 
-Si cambias `keycloak/siga-realm.json` (por ejemplo, un cliente nuevo), Keycloak solo lo importa cuando el realm no existe: hay que usar `docker compose down -v` para que tome efecto.
+El frontend tiene el perfil `frontend`. Si `COMPOSE_PROFILES=frontend` no está en el `.env`, estos comandos lo ignoran y hay que agregar `--profile frontend` (por ejemplo, `docker compose --profile frontend stop`).
+
+Si cambias `keycloak/siga-realm.json`, Keycloak solo lo importa cuando el realm no existe: hay que usar `docker compose down -v` para que tome efecto.
 
 ### Datos de ejemplo (Anexo A)
 
 Con `SEED_DATA=true`, la primera vez que arranca el backend carga las 3 carreras del instituto, sus planes de estudio vigentes y las 72 asignaturas con sus prerrequisitos. Los datos están en `backend/src/main/resources/seed/`. Si una carrera ya existe, se omite, así que reiniciar no duplica nada.
 
-### Reconstruir el backend tras cambiar código
+### Reconstruir tras cambiar código
+
+Los contenedores usan la imagen que construiste. Si cambias código, reconstruye el servicio:
 
 ```bash
 docker compose up -d --build backend
+docker compose up -d --build frontend
 ```
+
+### Programar el frontend con recarga automática
+
+El contenedor del frontend sirve la versión compilada: para ver un cambio hay que reconstruirlo. Mientras editas pantallas es más cómodo el servidor de desarrollo de Vite, que muestra los cambios al instante.
+
+1. Detén el contenedor para liberar el puerto 5173: `docker stop siga-frontend`.
+2. Crea `frontend/.env` (una sola vez; está ignorado por git):
+
+   ```properties
+   VITE_API_URL=http://localhost:8090
+   VITE_KEYCLOAK_URL=http://localhost:8180
+   VITE_KEYCLOAK_REALM=siga
+   VITE_KEYCLOAK_CLIENT_ID=siga-frontend
+   ```
+
+3. Desde `frontend/`, la primera vez instala las dependencias con `npm install`, y luego ejecuta `npm run dev`.
+
+Al terminar, `docker compose up -d --build frontend` vuelve a dejar el contenedor con tus cambios.
 
 ### Ejecutar el backend desde IntelliJ en vez de en contenedor
 
@@ -124,6 +156,60 @@ Tienen valor por defecto; se pasan como variables de entorno.
 | `CORS_ALLOWED_ORIGINS` | `http://localhost:5173` | Orígenes permitidos para el frontend |
 | `SEED_DATA` | `false` | Carga los datos de ejemplo al arrancar |
 
+## Entorno de producción
+
+`docker-compose.prod.yml` levanta la arquitectura que pide el enunciado:
+
+```
+                 Navegador
+                     │
+               ┌───────────┐
+               │   Nginx   │  única entrada
+               └───────────┘
+   /api, /swagger-ui │ /auth          │ todo lo demás
+   backend-1, -2, -3      keycloak        frontend
+          │                   │
+        MySQL           datos de Keycloak
+```
+
+- Nginx reparte `/api` entre las 3 réplicas del backend, envía `/auth` a Keycloak y el resto al frontend.
+- Solo Nginx publica un puerto. MySQL, Keycloak y los backends quedan dentro de la red de Docker.
+- `backend-1` arranca primero, crea las tablas y carga los datos de ejemplo. Las réplicas 2 y 3 esperan a que esté listo y nunca cargan datos.
+- La imagen del frontend no lleva URLs fijas: usa la misma dirección desde la que se abrió la página, así que sirve en cualquier dominio.
+
+### Variables
+
+Además de las del entorno de desarrollo, el `.env` necesita:
+
+| Variable | Qué poner |
+|---|---|
+| `KC_ADMIN_USER` | Usuario de la consola de administración de Keycloak |
+| `KC_ADMIN_PSW` | Contraseña de esa consola (usa una contraseña fuerte) |
+| `PUBLIC_URL` | Dirección con la que se abre la aplicación, por ejemplo `https://mi-dominio` |
+| `PUBLIC_PORT` | Puerto que publica Nginx (`80` por defecto) |
+| `BACKEND_IMAGE` | Imagen del backend; por defecto se construye localmente como `siga-backend:prod` |
+| `FRONTEND_IMAGE` | Imagen del frontend; por defecto se construye localmente como `siga-frontend:prod` |
+
+Si falta una contraseña obligatoria, el compose se niega a arrancar y dice cuál falta.
+
+### Levantarlo
+
+```bash
+docker compose -f docker-compose.prod.yml up -d --build
+```
+
+Para probarlo en el computador usa `PUBLIC_PORT=8088` y `PUBLIC_URL=http://localhost:8088` (Podman sin root no puede abrir el puerto 80), y detén antes el entorno de desarrollo para no quedarte sin memoria. La aplicación queda en `http://localhost:8088`.
+
+Para ver a qué réplica fue cada petición:
+
+```bash
+docker compose -f docker-compose.prod.yml logs nginx
+```
+
+Cada línea termina con `upstream=<ip>:8090`, la réplica que la atendió.
+
+Para apagarlo: `docker compose -f docker-compose.prod.yml stop`. Para borrarlo junto con sus datos: `docker compose -f docker-compose.prod.yml down -v`.
+
 ## Usuarios de prueba
 
 Definidos en `keycloak/siga-realm.json`. Solo para desarrollo.
@@ -134,7 +220,9 @@ Definidos en `keycloak/siga-realm.json`. Solo para desarrollo.
 | Docente | `teacher` | `Siga1234!` |
 | Estudiante | `student` | `Siga1234!` |
 
-Los usuarios `teacher` y `student` solo ven sus propios datos cuando existe una ficha en la base de datos con el mismo correo (`teacher@siga.cl`, `student@siga.cl`).
+Los usuarios `teacher` y `student` solo ven sus propios datos cuando el administrador crea su ficha con el mismo correo (`teacher@siga.cl`, `student@siga.cl`): el backend reutiliza el usuario existente de Keycloak y lo vincula a la ficha.
+
+Los estudiantes y docentes que crea el administrador entran con su RUT (formato `12345678-k`) o con su correo, y con la contraseña inicial que se les asignó. Keycloak pide cambiarla en el primer ingreso.
 
 ## Probar la API con Swagger
 
@@ -146,17 +234,9 @@ Los usuarios `teacher` y `student` solo ven sus propios datos cuando existe una 
 
 La sección **bearerAuth** es una alternativa manual: ahí se pega un token ya obtenido (nunca la contraseña).
 
-Para obtener un token a mano:
+Keycloak no entrega tokens a cambio de usuario y contraseña enviados directamente (el login directo está desactivado por seguridad): siempre hay que pasar por su pantalla de login, como hace **keycloakLogin**.
 
-```bash
-curl -s -X POST http://localhost:8180/realms/siga/protocol/openid-connect/token \
-  -d grant_type=password \
-  -d client_id=siga-frontend \
-  -d username=admin \
-  -d 'password=Siga1234!' | jq -r .access_token
-```
-
-El token dura 5 minutos. Luego hay que pedir otro.
+El token dura 5 minutos. Si Swagger responde 401, pulsa **Authorize**, luego **Logout** y otra vez **Authorize** para obtener uno nuevo.
 
 ### Códigos de respuesta
 
@@ -187,7 +267,7 @@ Con `SEED_DATA=true` los pasos 1 a 3 ya vienen cargados (3 carreras, sus planes 
 
 La inscripción (`POST /api/enrollments`) la hace el estudiante y las notas las registra el docente. Para probarlas hay que autorizarse con el usuario de esa persona.
 
-Al crear un estudiante o un docente se envía una contraseña inicial (`password`, mínimo 8 caracteres). El backend crea su usuario en Keycloak con el rol correspondiente. Esa contraseña no se guarda en la base de datos y Keycloak pide cambiarla en el primer ingreso.
+Al crear un estudiante o un docente se envía una contraseña inicial (`password`, mínimo 8 caracteres). El backend crea su usuario en Keycloak con el rol correspondiente. Esa contraseña no se guarda en la base de datos.
 
 ## Pruebas
 
@@ -198,15 +278,15 @@ cd backend
 ```
 
 - Las pruebas unitarias no necesitan MySQL ni Keycloak.
-- Las pruebas de integración levantan su propio MySQL en un contenedor (Testcontainers). Necesitan el socket de Podman encendido (paso 2). No usan la base de datos de desarrollo.
+- Las pruebas de integración levantan su propio MySQL en un contenedor (Testcontainers). Necesitan el socket de Podman encendido. No usan la base de datos de desarrollo.
 - El reporte de cobertura queda en `backend/build/reports/jacoco/test/html/index.html`.
 
 ## Advertencias
 
 - **`docker compose down -v` borra todo:** la base de datos y los usuarios de Keycloak. Sin `-v` los datos se conservan.
-- **Reconstruir tras cambiar código:** el contenedor del backend usa la imagen que construiste. Si cambias código, ejecuta `docker compose up -d --build backend`.
-- **Un solo backend en el puerto 8090:** no ejecutes a la vez el contenedor y la app de IntelliJ.
-- **Credenciales de desarrollo:** el realm de Keycloak, la contraseña `admin/admin` de la consola y el secreto `siga-backend-dev-secret` son solo para desarrollo. En producción deben definirse por variables de entorno.
+- **Reconstruir tras cambiar código:** los contenedores no ven los cambios hasta reconstruirlos con `--build`.
+- **Un solo servicio por puerto:** no ejecutes a la vez el contenedor del backend y la app de IntelliJ (puerto 8090), ni el contenedor del frontend y `npm run dev` (puerto 5173).
+- **Credenciales de desarrollo:** los usuarios de prueba del realm, la contraseña `admin/admin` de la consola de Keycloak y el secreto `siga-backend-dev-secret` son solo para desarrollo. En producción se definen por variables de entorno.
 
 ## Si algo falla al arrancar
 
@@ -214,7 +294,10 @@ cd backend
 |---|---|
 | `docker compose up` dice que no puede conectar con la API de Docker | Falta encender el socket de Podman |
 | `docker compose up` falla por variables sin definir | Falta completar el archivo `.env` de la raíz |
+| `docker compose stop` no apaga el frontend | Falta `COMPOSE_PROFILES=frontend` en el `.env`; usa `--profile frontend` |
 | El backend no arranca desde IntelliJ y menciona la base de datos | Falta `DB_PORT=3307` en `backend/.env`, o el contenedor `siga-db` está apagado |
 | El puerto 8090 está ocupado | Hay otro backend corriendo (el contenedor o IntelliJ) |
+| `npm run dev` dice que el puerto 5173 está ocupado | El contenedor del frontend sigue encendido: `docker stop siga-frontend` |
+| No veo mis cambios en `http://localhost:5173` | El contenedor usa la imagen anterior: `docker compose up -d --build frontend` |
 | El login de Swagger da error | Keycloak apagado, o el backend corre con una versión antigua del código |
-| Un estudiante o docente nuevo no puede entrar | Todavía no cambia la contraseña inicial en la pantalla de Keycloak, o se borraron los volúmenes con `down -v` |
+| Un estudiante o docente nuevo no puede entrar | Usó un formato de RUT distinto de `12345678-k`, todavía no cambia la contraseña inicial, o se borraron los volúmenes con `down -v` |

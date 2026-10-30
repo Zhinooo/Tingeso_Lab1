@@ -10,7 +10,7 @@ const COLUMNS = [
   { label: 'Acciones', align: 'right' },
 ]
 
-function SectionTable({ sections, loading, emptyHint, onDelete }) {
+function SectionTable({ sections, closedPeriodIds, loading, emptyHint, onDelete }) {
   return (
     <DataTable
       columns={COLUMNS}
@@ -20,7 +20,12 @@ function SectionTable({ sections, loading, emptyHint, onDelete }) {
       emptyHint={emptyHint}
     >
       {sections.map((section) => (
-        <SectionRow key={section.sectionId} section={section} onDelete={onDelete} />
+        <SectionRow
+          key={section.sectionId}
+          section={section}
+          isClosed={closedPeriodIds.includes(section.academicPeriodId)}
+          onDelete={onDelete}
+        />
       ))}
     </DataTable>
   )

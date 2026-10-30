@@ -63,6 +63,7 @@ class GradeProcessIT extends IntegrationTestBase {
         httpGet("/api/enrollments/me/section/" + sectionId, teacher.token())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].studentFullname").value(org.hamcrest.Matchers.startsWith("Student ")))
                 .andExpect(jsonPath("$[0].finalGrade").value(4.0));
     }
 

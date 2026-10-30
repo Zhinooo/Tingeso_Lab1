@@ -76,6 +76,7 @@ class EnrollmentServiceTest {
         student = new StudentEntity();
         student.setStudentId(1L);
         student.setStudentRun("1-9");
+        student.setStudentFullname("Student One");
         student.setStudentStatus(StudentEntity.StudentStatus.REGULAR);
         student.setStudyplan(plan);
         period = period(1L, AcademicPeriodEntity.AcademicPeriodStatus.OPEN);
@@ -179,6 +180,7 @@ class EnrollmentServiceTest {
         assertThat(result).extracting(EnrollmentResponseDTO::courseCode).containsExactly("A1", "A2", "A3");
         assertThat(result).allSatisfy(e -> {
             assertThat(e.studentId()).isEqualTo(1L);
+            assertThat(e.studentFullname()).isEqualTo("Student One");
             assertThat(e.enrollmentDate()).isEqualTo(LocalDate.now());
             assertThat(e.finalGrade()).isNull();
         });

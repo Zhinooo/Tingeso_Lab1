@@ -4,24 +4,12 @@ const getAll = () => {
   return httpClient.get('/api/enrollments')
 }
 
-const get = (id) => {
-  return httpClient.get(`/api/enrollments/${id}`)
-}
-
-const getByStudent = (studentId) => {
-  return httpClient.get(`/api/enrollments/student/${studentId}`)
-}
-
 const getStudentHistory = (studentId) => {
   return httpClient.get(`/api/enrollments/student/${studentId}/history`)
 }
 
 const getByAcademicPeriod = (academicPeriodId) => {
   return httpClient.get(`/api/enrollments/academic-period/${academicPeriodId}`)
-}
-
-const getBySection = (sectionId) => {
-  return httpClient.get(`/api/enrollments/section/${sectionId}`)
 }
 
 const getMine = () => {
@@ -54,11 +42,8 @@ const registerGrade = (id, data) => {
 
 export default {
   getAll,
-  get,
-  getByStudent,
   getStudentHistory,
   getByAcademicPeriod,
-  getBySection,
   getMine,
   getMyHistory,
   getMyAvailable,

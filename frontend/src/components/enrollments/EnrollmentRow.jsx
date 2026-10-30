@@ -7,6 +7,7 @@ function EnrollmentRow({ enrollment }) {
   return (
     <TableRow hover>
       <TableCell sx={{ fontFamily: 'monospace', whiteSpace: 'nowrap' }}>{enrollment.studentRun}</TableCell>
+      <TableCell>{enrollment.studentFullname}</TableCell>
       <TableCell>{formatPeriod(enrollment)}</TableCell>
       <TableCell sx={{ fontFamily: 'monospace', fontWeight: 700 }}>{enrollment.courseCode}</TableCell>
       <TableCell>{enrollment.courseName}</TableCell>

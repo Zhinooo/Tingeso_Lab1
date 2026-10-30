@@ -13,6 +13,7 @@ function GradeRow({ enrollment, value, readOnly, saving, onChange, onSave }) {
   return (
     <TableRow hover>
       <TableCell sx={{ fontFamily: 'monospace', whiteSpace: 'nowrap' }}>{enrollment.studentRun}</TableCell>
+      <TableCell>{enrollment.studentFullname}</TableCell>
       <TableCell>
         <TextField
           type="number"

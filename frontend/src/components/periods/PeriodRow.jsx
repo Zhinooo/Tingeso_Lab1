@@ -21,11 +21,13 @@ function PeriodRow({ period, onClosePeriod, onDelete }) {
             color="primary"
             to={`/admin/sections?academicPeriodId=${period.academicPeriodId}`}
           />
-          <RowAction label="Editar" to={`/admin/academic-periods/${period.academicPeriodId}/edit`} />
           {isOpen && (
-            <RowAction label="Cerrar período" color="warning" onClick={() => onClosePeriod(period)} />
+            <>
+              <RowAction label="Editar" to={`/admin/academic-periods/${period.academicPeriodId}/edit`} />
+              <RowAction label="Cerrar período" color="warning" onClick={() => onClosePeriod(period)} />
+              <RowAction label="Eliminar" color="error" onClick={() => onDelete(period)} />
+            </>
           )}
-          <RowAction label="Eliminar" color="error" onClick={() => onDelete(period)} />
         </RowActions>
       </TableCell>
     </TableRow>
