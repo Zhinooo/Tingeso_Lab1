@@ -37,6 +37,7 @@ DB_ROOT_PSW=<contraseña de root de MySQL>
 SIGA_BACKEND_CLIENT_SECRET=siga-backend-dev-secret
 SEED_DATA=true
 COMPOSE_PROFILES=frontend
+SIGA_TEST_USER_PASSWORD=<contraseña de los usuarios de prueba>
 ```
 
 | Variable | Qué poner |
@@ -47,6 +48,7 @@ COMPOSE_PROFILES=frontend
 | `SIGA_BACKEND_CLIENT_SECRET` | `siga-backend-dev-secret` en desarrollo |
 | `SEED_DATA` | `true` para cargar las carreras, planes y asignaturas del Anexo A |
 | `COMPOSE_PROFILES` | `frontend` para que `docker compose` también levante y detenga el frontend |
+| `SIGA_TEST_USER_PASSWORD` | Contraseña de los usuarios de prueba `admin`, `teacher` y `student` de Keycloak |
 
 ### Cada vez que arranques el computador
 
@@ -95,7 +97,7 @@ Los datos persisten en volúmenes de Docker (`db-data` y `keycloak-data`), así 
 
 El frontend tiene el perfil `frontend`. Si `COMPOSE_PROFILES=frontend` no está en el `.env`, estos comandos lo ignoran y hay que agregar `--profile frontend` (por ejemplo, `docker compose --profile frontend stop`).
 
-Si cambias `keycloak/siga-realm.json`, Keycloak solo lo importa cuando el realm no existe: hay que usar `docker compose down -v` para que tome efecto.
+Si cambias `keycloak/siga-realm.json` o `SIGA_TEST_USER_PASSWORD`, Keycloak solo los toma cuando el realm no existe: hay que usar `docker compose down -v` para que tome efecto.
 
 ### Datos de ejemplo (Anexo A)
 
@@ -212,13 +214,13 @@ Para apagarlo: `docker compose -f docker-compose.prod.yml stop`. Para borrarlo j
 
 ## Usuarios de prueba
 
-Definidos en `keycloak/siga-realm.json`. Solo para desarrollo.
+Definidos en `keycloak/siga-realm.json`. Los tres usan la contraseña de la variable `SIGA_TEST_USER_PASSWORD` del `.env`; la contraseña no está escrita en el repositorio.
 
-| Rol | Usuario | Contraseña |
-|---|---|---|
-| Administrador | `admin` | `Siga1234!` |
-| Docente | `teacher` | `Siga1234!` |
-| Estudiante | `student` | `Siga1234!` |
+| Rol | Usuario |
+|---|---|
+| Administrador | `admin` |
+| Docente | `teacher` |
+| Estudiante | `student` |
 
 Los usuarios `teacher` y `student` solo ven sus propios datos cuando el administrador crea su ficha con el mismo correo (`teacher@siga.cl`, `student@siga.cl`): el backend reutiliza el usuario existente de Keycloak y lo vincula a la ficha.
 
@@ -229,7 +231,7 @@ Los estudiantes y docentes que crea el administrador entran con su RUT (formato 
 1. Abre `http://localhost:8090/swagger-ui.html`.
 2. Pulsa **Authorize**, arriba a la derecha.
 3. En la sección **keycloakLogin**, pulsa su botón **Authorize**. Se abre la pantalla de Keycloak.
-4. Escribe el usuario y la contraseña en la pantalla de Keycloak (por ejemplo `admin` y `Siga1234!`). Swagger nunca pide la contraseña.
+4. Escribe el usuario y la contraseña en la pantalla de Keycloak (por ejemplo `admin` y la contraseña de `SIGA_TEST_USER_PASSWORD`). Swagger nunca pide la contraseña.
 5. Ya puedes usar **Try it out** en cualquier endpoint.
 
 La sección **bearerAuth** es una alternativa manual: ahí se pega un token ya obtenido (nunca la contraseña).

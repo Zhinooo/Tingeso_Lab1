@@ -58,6 +58,7 @@ services:
       KC_PROXY_HEADERS: xforwarded
       SIGA_BACKEND_CLIENT_SECRET: ${SIGA_BACKEND_CLIENT_SECRET:?SIGA_BACKEND_CLIENT_SECRET is required}
       SIGA_PUBLIC_URL: ${PUBLIC_URL:-http://localhost}
+      SIGA_TEST_USER_PASSWORD: ${SIGA_TEST_USER_PASSWORD:?SIGA_TEST_USER_PASSWORD is required}
     volumes:
       - ./keycloak:/opt/keycloak/data/import:Z
       - keycloak-data:/opt/keycloak/data/h2

@@ -25,6 +25,7 @@ services:
       KC_BOOTSTRAP_ADMIN_USERNAME: ${KC_ADMIN_USER:-admin}
       KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_ADMIN_PSW:-admin}
       SIGA_BACKEND_CLIENT_SECRET: ${SIGA_BACKEND_CLIENT_SECRET:-siga-backend-dev-secret}
+      SIGA_TEST_USER_PASSWORD: ${SIGA_TEST_USER_PASSWORD:?SIGA_TEST_USER_PASSWORD is required}
     ports:
       - "8180:8080"
     volumes:

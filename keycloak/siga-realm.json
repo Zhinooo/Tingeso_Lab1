@@ -48,7 +48,7 @@
       "enabled": true,
       "firstName": "Admin",
       "lastName": "Siga",
-      "credentials": [{ "type": "password", "value": "Siga1234!", "temporary": false }],
+      "credentials": [{ "type": "password", "value": "${SIGA_TEST_USER_PASSWORD}", "temporary": false }],
       "realmRoles": ["ADMIN"]
     },
     {
@@ -58,7 +58,7 @@
       "enabled": true,
       "firstName": "Teacher",
       "lastName": "Siga",
-      "credentials": [{ "type": "password", "value": "Siga1234!", "temporary": false }],
+      "credentials": [{ "type": "password", "value": "${SIGA_TEST_USER_PASSWORD}", "temporary": false }],
       "realmRoles": ["TEACHER"]
     },
     {
@@ -68,7 +68,7 @@
       "enabled": true,
       "firstName": "Student",
       "lastName": "Siga",
-      "credentials": [{ "type": "password", "value": "Siga1234!", "temporary": false }],
+      "credentials": [{ "type": "password", "value": "${SIGA_TEST_USER_PASSWORD}", "temporary": false }],
       "realmRoles": ["STUDENT"]
     }
   ]
