@@ -61,7 +61,7 @@ services:
       SIGA_TEST_USER_PASSWORD: ${SIGA_TEST_USER_PASSWORD:?SIGA_TEST_USER_PASSWORD is required}
     volumes:
       - ./keycloak:/opt/keycloak/data/import:Z
-      - keycloak-data:/opt/keycloak/data/h2
+      - keycloak-data:/opt/keycloak/data
 
   backend-1:
     <<: *backend

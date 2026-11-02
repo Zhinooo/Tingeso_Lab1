@@ -30,7 +30,7 @@ services:
       - "8180:8080"
     volumes:
       - ./keycloak:/opt/keycloak/data/import:Z
-      - keycloak-data:/opt/keycloak/data/h2
+      - keycloak-data:/opt/keycloak/data
 
   backend:
     build: ./backend
