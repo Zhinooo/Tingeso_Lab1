@@ -104,6 +104,7 @@ services:
         condition: service_started
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro,Z
+      - ./nginx/locations.conf:/etc/nginx/siga/locations.conf:ro,Z
     ports:
       - "${PUBLIC_PORT:-80}:80"
 
