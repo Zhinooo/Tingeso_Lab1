@@ -25,6 +25,7 @@ import EnrollCourses from './pages/student/EnrollCourses'
 import MyEnrollments from './pages/student/MyEnrollments'
 import MyHistory from './pages/student/MyHistory'
 import MyProfile from './pages/student/MyProfile'
+import MySchedule from './pages/student/MySchedule'
 import MySections from './pages/teacher/MySections'
 import SectionGrades from './pages/teacher/SectionGrades'
 
@@ -81,6 +82,7 @@ function App() {
             <Route path="/student/profile" element={<MyProfile />} />
             <Route path="/student/enroll" element={<EnrollCourses />} />
             <Route path="/student/enrollments" element={<MyEnrollments />} />
+            <Route path="/student/schedule" element={<MySchedule />} />
             <Route path="/student/history" element={<MyHistory />} />
           </Route>
         </Route>

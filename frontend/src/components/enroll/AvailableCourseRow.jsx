@@ -6,7 +6,7 @@ import ScheduleChips from '../ScheduleChips'
 import SemesterBadge from '../courses/SemesterBadge'
 import SeatsIndicator from './SeatsIndicator'
 
-function AvailableCourseRow({ course, checked, onToggle }) {
+function AvailableCourseRow({ course, checked, conflictsWith, onToggle }) {
   const isFull = course.availableSeats <= 0
 
   return (
@@ -31,6 +31,11 @@ function AvailableCourseRow({ course, checked, onToggle }) {
       <TableCell>{course.teacherFullname}</TableCell>
       <TableCell>
         <ScheduleChips blocks={course.scheduleBlocks} />
+        {conflictsWith.length > 0 && (
+          <Typography variant="caption" color="error.main">
+            Topa con {conflictsWith.join(', ')}
+          </Typography>
+        )}
       </TableCell>
       <TableCell sx={{ minWidth: 110 }}>
         <SeatsIndicator available={course.availableSeats} capacity={course.sectionCapacity} />

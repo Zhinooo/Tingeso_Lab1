@@ -1,3 +1,4 @@
+import { NO_MATCH_HINT, NO_MATCH_MESSAGE } from '../../constants/search'
 import DataTable from '../DataTable'
 import StudentRow from './StudentRow'
 
@@ -11,14 +12,14 @@ const COLUMNS = [
   { label: 'Acciones', align: 'right' },
 ]
 
-function StudentTable({ students, loading, onStatusChange, onDelete }) {
+function StudentTable({ students, loading, isFiltered, onStatusChange, onDelete }) {
   return (
     <DataTable
       columns={COLUMNS}
       rowCount={students.length}
       loading={loading}
-      emptyMessage="Aún no hay estudiantes"
-      emptyHint="Los estudiantes quedan en el plan vigente de su carrera."
+      emptyMessage={isFiltered ? NO_MATCH_MESSAGE : 'Aún no hay estudiantes'}
+      emptyHint={isFiltered ? NO_MATCH_HINT : 'Los estudiantes quedan en el plan vigente de su carrera.'}
     >
       {students.map((student) => (
         <StudentRow

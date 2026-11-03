@@ -10,7 +10,7 @@ const COLUMNS = [
   { label: 'Cupos' },
 ]
 
-function AvailableCourseTable({ courses, selected, loading, onToggle }) {
+function AvailableCourseTable({ courses, selected, conflictsByCourse, loading, onToggle }) {
   return (
     <DataTable
       columns={COLUMNS}
@@ -24,6 +24,7 @@ function AvailableCourseTable({ courses, selected, loading, onToggle }) {
           key={course.courseId}
           course={course}
           checked={selected.includes(course.courseId)}
+          conflictsWith={conflictsByCourse[course.courseId] ?? []}
           onToggle={onToggle}
         />
       ))}

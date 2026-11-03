@@ -12,4 +12,5 @@ export const STATUS_LABEL = {
   EXPELLED: 'Expulsado',
   APPROVED: 'Aprobado',
   FAILED: 'Reprobado',
+  IN_PROGRESS: 'En curso',
 }

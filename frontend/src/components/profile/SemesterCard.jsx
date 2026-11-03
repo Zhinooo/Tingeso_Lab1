@@ -5,8 +5,9 @@ import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
 import { SEMESTER_COLORS } from '../../constants/semesters'
 import PrerequisiteChips from '../courses/PrerequisiteChips'
+import StatusChip from '../StatusChip'
 
-function SemesterCard({ semester, courses }) {
+function SemesterCard({ semester, courses, statuses = {} }) {
   const color = SEMESTER_COLORS[semester]
   const totalSct = courses.reduce((sum, course) => sum + course.sct, 0)
 
@@ -36,6 +37,7 @@ function SemesterCard({ semester, courses }) {
               <Typography variant="caption" color="text.secondary">
                 TEL {`${course.theoryHours}-${course.exerciseHours}-${course.labHours}`}
               </Typography>
+              {statuses[course.courseId] && <StatusChip status={statuses[course.courseId]} />}
             </Stack>
             {course.prerequisiteCodes.length > 0 && (
               <Stack sx={{ mt: 0.5 }}>

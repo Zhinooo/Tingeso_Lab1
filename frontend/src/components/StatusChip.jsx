@@ -15,6 +15,7 @@ const COLORS = {
   EXPELLED: 'error',
   APPROVED: 'success',
   FAILED: 'error',
+  IN_PROGRESS: 'info',
 }
 
 function StatusChip({ status, size = 'small' }) {

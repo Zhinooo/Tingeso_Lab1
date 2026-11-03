@@ -3,8 +3,11 @@ import ConfirmDialog from '../../components/ConfirmDialog'
 import ErrorAlert from '../../components/ErrorAlert'
 import NewButton from '../../components/NewButton'
 import PageHeader from '../../components/PageHeader'
+import ClosePeriodDialog from '../../components/periods/ClosePeriodDialog'
 import PeriodTable from '../../components/periods/PeriodTable'
 import academicPeriodService from '../../services/academicPeriod.service'
+import enrollmentService from '../../services/enrollment.service'
+import { summarizePendingGrades } from '../../utils/grades'
 import { formatPeriod } from '../../utils/periods'
 
 function AcademicPeriodList() {
@@ -13,6 +16,7 @@ function AcademicPeriodList() {
   const [error, setError] = useState('')
   const [closeError, setCloseError] = useState('')
   const [toClose, setToClose] = useState(null)
+  const [closeSummary, setCloseSummary] = useState(null)
   const [toDelete, setToDelete] = useState(null)
 
   useEffect(() => {
@@ -27,6 +31,19 @@ function AcademicPeriodList() {
     setPeriods((current) =>
       current.map((item) => (item.academicPeriodId === updated.academicPeriodId ? updated : item)),
     )
+
+  const handleReviewClose = (period) => {
+    setToClose(period)
+    setCloseSummary(null)
+    setCloseError('')
+    enrollmentService
+      .getByAcademicPeriod(period.academicPeriodId)
+      .then((response) => setCloseSummary(summarizePendingGrades(response.data)))
+      .catch((err) => {
+        setToClose(null)
+        setCloseError(err.message)
+      })
+  }
 
   const handleClosePeriod = () => {
     const period = toClose
@@ -62,14 +79,12 @@ function AcademicPeriodList() {
       <PeriodTable
         periods={periods}
         loading={loading}
-        onClosePeriod={setToClose}
+        onClosePeriod={handleReviewClose}
         onDelete={setToDelete}
       />
-      <ConfirmDialog
-        open={Boolean(toClose)}
-        title={toClose && `¿Cerrar el período ${formatPeriod(toClose)}?`}
-        message="Esta acción es irreversible. Todas las inscripciones deben tener nota final y se actualizará el estado de los estudiantes."
-        confirmLabel="Cerrar período"
+      <ClosePeriodDialog
+        period={toClose}
+        summary={closeSummary}
         onConfirm={handleClosePeriod}
         onClose={() => setToClose(null)}
       />

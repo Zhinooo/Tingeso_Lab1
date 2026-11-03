@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import Box from '@mui/material/Box'
+import Stack from '@mui/material/Stack'
 import ErrorAlert from '../../components/ErrorAlert'
 import PageHeader from '../../components/PageHeader'
 import PeriodFilter from '../../components/PeriodFilter'
+import SearchField from '../../components/SearchField'
 import EnrollmentTable from '../../components/enrollments/EnrollmentTable'
 import academicPeriodService from '../../services/academicPeriod.service'
 import enrollmentService from '../../services/enrollment.service'
+import { matchesSearch } from '../../utils/search'
 
 function EnrollmentList() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -15,6 +17,7 @@ function EnrollmentList() {
   const [enrollments, setEnrollments] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [search, setSearch] = useState('')
 
   useEffect(() => {
     academicPeriodService
@@ -33,6 +36,10 @@ function EnrollmentList() {
       .finally(() => setLoading(false))
   }, [academicPeriodId])
 
+  const filteredEnrollments = enrollments.filter((enrollment) =>
+    matchesSearch(search, enrollment.studentRun, enrollment.studentFullname, enrollment.courseCode, enrollment.courseName),
+  )
+
   const handlePeriodChange = (value) => {
     setLoading(true)
     setSearchParams(value ? { academicPeriodId: value } : {})
@@ -41,11 +48,12 @@ function EnrollmentList() {
   return (
     <>
       <PageHeader title="Inscripciones" subtitle="Vista de solo lectura de las inscripciones y notas finales." />
-      <Box sx={{ mb: 2 }}>
+      <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
         <PeriodFilter periods={periods} value={academicPeriodId} onChange={handlePeriodChange} />
-      </Box>
+        <SearchField value={search} placeholder="Buscar por RUN, estudiante o ramo" onChange={setSearch} />
+      </Stack>
       <ErrorAlert message={error} onClose={() => setError('')} />
-      <EnrollmentTable enrollments={enrollments} loading={loading} />
+      <EnrollmentTable enrollments={filteredEnrollments} loading={loading} isFiltered={Boolean(search)} />
     </>
   )
 }

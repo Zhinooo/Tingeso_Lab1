@@ -5,11 +5,13 @@ import ConfirmDialog from '../../components/ConfirmDialog'
 import ErrorAlert from '../../components/ErrorAlert'
 import NewButton from '../../components/NewButton'
 import PageHeader from '../../components/PageHeader'
+import SearchField from '../../components/SearchField'
 import StudyplanFilter from '../../components/StudyplanFilter'
 import CourseTable from '../../components/courses/CourseTable'
 import SemesterLegend from '../../components/courses/SemesterLegend'
 import courseService from '../../services/course.service'
 import studyplanService from '../../services/studyplan.service'
+import { matchesSearch } from '../../utils/search'
 
 function CourseList() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -19,6 +21,7 @@ function CourseList() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [toDelete, setToDelete] = useState(null)
+  const [search, setSearch] = useState('')
 
   useEffect(() => {
     studyplanService
@@ -50,6 +53,8 @@ function CourseList() {
       .catch((err) => setError(err.message))
   }
 
+  const filteredCourses = courses.filter((course) => matchesSearch(search, course.courseCode, course.courseName))
+
   const newCourseUrl = studyplanId ? `/admin/courses/new?studyplanId=${studyplanId}` : '/admin/courses/new'
 
   return (
@@ -61,12 +66,14 @@ function CourseList() {
       />
       <Stack direction="row" spacing={3} sx={{ mb: 2, alignItems: 'center' }}>
         <StudyplanFilter studyplans={studyplans} value={studyplanId} onChange={handleStudyplanChange} />
+        <SearchField value={search} placeholder="Buscar por código o nombre" onChange={setSearch} />
         <SemesterLegend />
       </Stack>
       <ErrorAlert message={error} onClose={() => setError('')} />
       <CourseTable
-        courses={courses}
+        courses={filteredCourses}
         loading={loading}
+        isFiltered={Boolean(search)}
         emptyHint={studyplanId ? 'Este plan de estudio aún no tiene ramos.' : 'Primero crea un plan de estudio y luego agrega sus ramos.'}
         onDelete={setToDelete}
       />

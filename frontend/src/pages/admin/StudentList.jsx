@@ -3,14 +3,19 @@ import ConfirmDialog from '../../components/ConfirmDialog'
 import ErrorAlert from '../../components/ErrorAlert'
 import NewButton from '../../components/NewButton'
 import PageHeader from '../../components/PageHeader'
+import StudentFilters from '../../components/students/StudentFilters'
 import StudentTable from '../../components/students/StudentTable'
 import studentService from '../../services/student.service'
+import { matchesSearch } from '../../utils/search'
 
 function StudentList() {
   const [students, setStudents] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [toDelete, setToDelete] = useState(null)
+  const [search, setSearch] = useState('')
+  const [status, setStatus] = useState('')
+  const [careerCode, setCareerCode] = useState('')
 
   useEffect(() => {
     studentService
@@ -19,6 +24,15 @@ function StudentList() {
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false))
   }, [])
+
+  const careerCodes = [...new Set(students.map((student) => student.careerCode))].sort()
+  const isFiltered = Boolean(search || status || careerCode)
+  const filteredStudents = students.filter(
+    (student) =>
+      matchesSearch(search, student.studentRun, student.studentFullname, student.studentEmail) &&
+      (!status || student.studentStatus === status) &&
+      (!careerCode || student.careerCode === careerCode),
+  )
 
   const handleStatusChange = (student, newStatus) => {
     setError('')
@@ -49,10 +63,20 @@ function StudentList() {
         subtitle="Registro de estudiantes, su carrera y estado académico."
         action={<NewButton to="/admin/students/new">Nuevo estudiante</NewButton>}
       />
+      <StudentFilters
+        search={search}
+        status={status}
+        careerCode={careerCode}
+        careerCodes={careerCodes}
+        onSearchChange={setSearch}
+        onStatusChange={setStatus}
+        onCareerChange={setCareerCode}
+      />
       <ErrorAlert message={error} onClose={() => setError('')} />
       <StudentTable
-        students={students}
+        students={filteredStudents}
         loading={loading}
+        isFiltered={isFiltered}
         onStatusChange={handleStatusChange}
         onDelete={setToDelete}
       />

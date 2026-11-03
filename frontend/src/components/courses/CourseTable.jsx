@@ -1,3 +1,4 @@
+import { NO_MATCH_HINT, NO_MATCH_MESSAGE } from '../../constants/search'
 import DataTable from '../DataTable'
 import CourseRow from './CourseRow'
 
@@ -17,7 +18,7 @@ const compareCourses = (a, b) =>
   a.semester - b.semester ||
   a.courseCode.localeCompare(b.courseCode)
 
-function CourseTable({ courses, loading, emptyHint, onDelete }) {
+function CourseTable({ courses, loading, isFiltered, emptyHint, onDelete }) {
   const sortedCourses = [...courses].sort(compareCourses)
 
   return (
@@ -25,8 +26,8 @@ function CourseTable({ courses, loading, emptyHint, onDelete }) {
       columns={COLUMNS}
       rowCount={courses.length}
       loading={loading}
-      emptyMessage="Aún no hay ramos"
-      emptyHint={emptyHint}
+      emptyMessage={isFiltered ? NO_MATCH_MESSAGE : 'Aún no hay ramos'}
+      emptyHint={isFiltered ? NO_MATCH_HINT : emptyHint}
     >
       {sortedCourses.map((course) => (
         <CourseRow key={course.courseId} course={course} onDelete={onDelete} />

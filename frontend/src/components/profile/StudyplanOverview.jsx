@@ -4,7 +4,7 @@ import Typography from '@mui/material/Typography'
 import { SEMESTERS } from '../../constants/semesters'
 import SemesterCard from './SemesterCard'
 
-function StudyplanOverview({ courses, action }) {
+function StudyplanOverview({ courses, courseStatuses, action }) {
   return (
     <>
       <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
@@ -14,7 +14,11 @@ function StudyplanOverview({ courses, action }) {
       <Grid container spacing={2}>
         {SEMESTERS.map((semester) => (
           <Grid key={semester} size={3}>
-            <SemesterCard semester={semester} courses={courses.filter((course) => course.semester === semester)} />
+            <SemesterCard
+              semester={semester}
+              courses={courses.filter((course) => course.semester === semester)}
+              statuses={courseStatuses}
+            />
           </Grid>
         ))}
       </Grid>

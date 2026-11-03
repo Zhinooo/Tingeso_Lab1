@@ -11,6 +11,7 @@ import ClassOutlinedIcon from '@mui/icons-material/ClassOutlined'
 import PersonOutlineIcon from '@mui/icons-material/PersonOutlineOutlined'
 import AddTaskIcon from '@mui/icons-material/AddTask'
 import ListAltOutlinedIcon from '@mui/icons-material/ListAltOutlined'
+import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined'
 import HistoryEduOutlinedIcon from '@mui/icons-material/HistoryEduOutlined'
 
 export const NAV = [
@@ -40,6 +41,7 @@ export const NAV = [
       { label: 'Mi perfil', to: '/student/profile', icon: PersonOutlineIcon },
       { label: 'Inscribir ramos', to: '/student/enroll', icon: AddTaskIcon },
       { label: 'Mis inscripciones', to: '/student/enrollments', icon: ListAltOutlinedIcon },
+      { label: 'Mi horario', to: '/student/schedule', icon: CalendarMonthOutlinedIcon },
       { label: 'Historial académico', to: '/student/history', icon: HistoryEduOutlinedIcon },
     ],
   },

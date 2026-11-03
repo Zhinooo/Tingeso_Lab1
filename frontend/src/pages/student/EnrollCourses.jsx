@@ -9,7 +9,9 @@ import AvailableCourseTable from '../../components/enroll/AvailableCourseTable'
 import EnrollmentSummaryBar from '../../components/enroll/EnrollmentSummaryBar'
 import academicPeriodService from '../../services/academicPeriod.service'
 import enrollmentService from '../../services/enrollment.service'
+import sectionService from '../../services/section.service'
 import tuitionService from '../../services/tuition.service'
+import { buildEnrollmentChecks, findConflictingCourses } from '../../utils/enrollmentRules'
 
 function EnrollCourses() {
   const navigate = useNavigate()
@@ -17,6 +19,7 @@ function EnrollCourses() {
   const [tuitionPeriodIds, setTuitionPeriodIds] = useState([])
   const [academicPeriodId, setAcademicPeriodId] = useState('')
   const [available, setAvailable] = useState([])
+  const [current, setCurrent] = useState([])
   const [selected, setSelected] = useState([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -42,9 +45,25 @@ function EnrollCourses() {
 
   useEffect(() => {
     if (!academicPeriodId) return
-    enrollmentService
-      .getMyAvailable(academicPeriodId)
-      .then((response) => setAvailable(response.data))
+    Promise.all([
+      enrollmentService.getMyAvailable(academicPeriodId),
+      enrollmentService.getMine(),
+      sectionService.getByAcademicPeriod(academicPeriodId),
+    ])
+      .then(([availableResponse, mineResponse, sectionsResponse]) => {
+        const blocksBySection = Object.fromEntries(
+          sectionsResponse.data.map((section) => [section.sectionId, section.scheduleBlocks]),
+        )
+        setAvailable(availableResponse.data)
+        setCurrent(
+          mineResponse.data
+            .filter((enrollment) => enrollment.academicPeriodId === Number(academicPeriodId))
+            .map((enrollment) => ({
+              courseCode: enrollment.courseCode,
+              blocks: blocksBySection[enrollment.sectionId] ?? [],
+            })),
+        )
+      })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false))
   }, [academicPeriodId])
@@ -73,6 +92,11 @@ function EnrollCourses() {
 
   const hasOpenPeriods = periods.length > 0
   const hasTuition = tuitionPeriodIds.includes(Number(academicPeriodId))
+  const selectedCourses = available.filter((course) => selected.includes(course.courseId))
+  const checks = buildEnrollmentChecks({ offer: available, selected: selectedCourses, current })
+  const conflictsByCourse = Object.fromEntries(
+    available.map((course) => [course.courseId, findConflictingCourses(course, current, selectedCourses)]),
+  )
 
   return (
     <>
@@ -95,14 +119,22 @@ function EnrollCourses() {
               No tienes matrícula en este período, por lo que no puedes inscribir ramos. Contacta al administrador.
             </Alert>
           )}
+          {current.length > 0 && (
+            <Alert severity="info" sx={{ mb: 2 }}>
+              Ya tienes {current.length} {current.length === 1 ? 'ramo inscrito' : 'ramos inscritos'} en este período. También
+              cuentan para el mínimo, el máximo y los topes de horario.
+            </Alert>
+          )}
           <AvailableCourseTable
             courses={available}
             selected={selected}
+            conflictsByCourse={conflictsByCourse}
             loading={loading}
             onToggle={toggleCourse}
           />
           <EnrollmentSummaryBar
             count={selected.length}
+            checks={checks}
             saving={saving}
             blocked={!hasTuition}
             onSubmit={handleSubmit}

@@ -1,3 +1,4 @@
+import { NO_MATCH_HINT, NO_MATCH_MESSAGE } from '../../constants/search'
 import DataTable from '../DataTable'
 import TeacherRow from './TeacherRow'
 
@@ -11,14 +12,14 @@ const COLUMNS = [
   { label: 'Acciones', align: 'right' },
 ]
 
-function TeacherTable({ teachers, loading, onToggleStatus, onDelete }) {
+function TeacherTable({ teachers, loading, isFiltered, onToggleStatus, onDelete }) {
   return (
     <DataTable
       columns={COLUMNS}
       rowCount={teachers.length}
       loading={loading}
-      emptyMessage="Aún no hay docentes"
-      emptyHint="Agrega un docente para poder asignarle secciones."
+      emptyMessage={isFiltered ? NO_MATCH_MESSAGE : 'Aún no hay docentes'}
+      emptyHint={isFiltered ? NO_MATCH_HINT : 'Agrega un docente para poder asignarle secciones.'}
     >
       {teachers.map((teacher) => (
         <TeacherRow
