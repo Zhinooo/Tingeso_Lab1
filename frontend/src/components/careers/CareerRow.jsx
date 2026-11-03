@@ -21,6 +21,7 @@ function CareerRow({ career, onToggleStatus, onDelete }) {
       </TableCell>
       <TableCell align="right">
         <RowActions>
+          <RowAction label="Información" to={`/admin/careers/${career.careerId}`} />
           <RowAction label="Editar" to={`/admin/careers/${career.careerId}/edit`} />
           <StatusToggleAction active={career.careerStatus === 'ACTIVE'} onClick={() => onToggleStatus(career)} />
           <RowAction label="Eliminar" color="error" onClick={() => onDelete(career)} />

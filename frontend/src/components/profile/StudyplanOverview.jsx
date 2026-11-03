@@ -1,14 +1,16 @@
 import Grid from '@mui/material/Grid'
+import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
 import { SEMESTERS } from '../../constants/semesters'
 import SemesterCard from './SemesterCard'
 
-function StudyplanOverview({ courses }) {
+function StudyplanOverview({ courses, action }) {
   return (
     <>
-      <Typography variant="h6" sx={{ mb: 2 }}>
-       Plan de estudio
-      </Typography>
+      <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Typography variant="h6">Plan de estudio</Typography>
+        {action}
+      </Stack>
       <Grid container spacing={2}>
         {SEMESTERS.map((semester) => (
           <Grid key={semester} size={3}>

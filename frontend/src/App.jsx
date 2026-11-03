@@ -11,6 +11,7 @@ import AddEditStudent from './pages/admin/AddEditStudent'
 import AddEditStudyplan from './pages/admin/AddEditStudyplan'
 import AddEditTeacher from './pages/admin/AddEditTeacher'
 import AddTuition from './pages/admin/AddTuition'
+import CareerDetail from './pages/admin/CareerDetail'
 import CareerList from './pages/admin/CareerList'
 import CourseList from './pages/admin/CourseList'
 import EnrollmentList from './pages/admin/EnrollmentList'
@@ -37,6 +38,7 @@ function App() {
           <Route element={<ProtectedRoute roles={['ADMIN']} />}>
             <Route path="/admin/careers" element={<CareerList />} />
             <Route path="/admin/careers/new" element={<AddEditCareer />} />
+            <Route path="/admin/careers/:id" element={<CareerDetail />} />
             <Route path="/admin/careers/:id/edit" element={<AddEditCareer />} />
 
             <Route path="/admin/studyplans" element={<StudyplanList />} />
